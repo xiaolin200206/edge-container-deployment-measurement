@@ -339,7 +339,7 @@ continuous-inference session. The deposit is cited as [dataset] and is available
 https://doi.org/10.5281/zenodo.22854130.
 
 The analysis code, container definitions, environment-capture routine and the edge inference
-application are available at https://github.com/xiaolin200206/unified-agtech-engine. Every table and figure in this article and its supplementary
+application are available at https://github.com/xiaolin200206/edge-container-deployment-measurement. Every table and figure in this article and its supplementary
 material is regenerated from the deposited telemetry by the released scripts; `analysis/recompute.py`
 emits every quantity stated in the text, so no reported value exists outside that chain.
 
