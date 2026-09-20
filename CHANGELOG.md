@@ -1,3 +1,128 @@
+# Changelog
+
+## Revision 2 — self-audit pass
+
+Every change below removes or weakens a claim, or reports something that was measured
+but not stated. No logged value was altered, and `analysis/recompute.py` emits every
+quantity the manuscript states.
+
+### Claims withdrawn
+
+- **"The direction of every effect replicated across both pairs."** Untrue. Six of the
+  nine reported quantities separate the conditions in the sense that both runs of one
+  condition fall outside the range of the other. Three do not: p95 latency, effective
+  throughput and energy per inference. Section 4.1 now names them, and the abstract,
+  conclusions, Fig4 caption and limitations follow.
+- **The p95 argument for why the latency cost is free.** It claimed that the time to
+  accumulate a five-frame confirmation is governed by the tail of the latency
+  distribution. It is not; accumulation is a sum, so the cost is five times the mean
+  difference, 41.5 ms. The p95 comparison also rested on two cherry-picked runs. Table 3
+  now carries p99 (+4.9 ms, +12.9 %) alongside p95.
+- **"Throttling events: none"** for the containerised runs. The container image ships no
+  `vcgencmd`, so that field logged `Unknown` for every containerised frame. Table 2 now
+  reads "not instrumented" and Section 4.1 explains why temperature is the stronger
+  evidence.
+- **Exclusion of SqueezeNet and ViT-B/16** from the architecture comparison. Dropping the
+  two runs that most favour one condition biases the summary. All eleven are retained;
+  the summary uses the median (+0.00 pp), a two-sided sign test (p = 0.727) and a
+  Wilcoxon signed-rank test (p = 0.383).
+- **The geometric account of out-of-distribution routing** is demoted to a conjecture.
+  It excluded Background on grounds of scene scale while preferring Disease on grounds of
+  appearance breadth, and Background is no less heterogeneous in appearance than Disease.
+  Section 5.3 states the inconsistency.
+
+### Measurements now reported that were not before
+
+- **Field log thermal data.** The deployed session peaked at 77.7 °C from a 46.9 °C cold
+  start, held a 70.0 °C mean at 94.1 % processor utilisation, and was still climbing
+  cycle over cycle when it ended — 4.3 °C from the 82 °C throttling threshold. The bench
+  runs peaked at 68.3 °C. Section 5.1's headroom argument is rebuilt around this, and the
+  conclusions state the comparison as a conditional, since the field session ran in one
+  configuration only.
+- **Loop decomposition.** Inference occupies 24 % of the native capture-to-capture loop
+  period and 32 % of the containerised one; the profiling regime is acquisition-bound.
+  This is why a 45.6 % difference in inference time yields 6.6 % in throughput, and it is
+  now a stated limitation on external validity.
+- **`docker_A` runs 6 h 25 min**, not 3 h. Its first three hours are analysed so that all
+  four runs contribute an equal span; the full log is deposited unaltered. Section 3.5
+  discloses this.
+
+### Corrections
+
+- Rule-of-three upper bound on the quiescent false-positive rate: approximately
+  1 × 10⁻⁵ per frame, not 3 × 10⁻⁶.
+- Probability of four events falling in one of two classes: 0.125, not 0.0625.
+- Healthy was predicted on zero frames of the supplementary session, so the absence of
+  Healthy among the four intrusion events is uninformative about routing. Stated.
+- Confirmed (post-filter) non-Background count is 26, not 30. Stated.
+- Field log rate: approximately 39.5 frame s⁻¹ over 151.8 s of active inference across
+  three duty cycles, not 33 frame s⁻¹ over 181 s of continuous operation.
+- Section 3.4 said bus current was logged; it is not. The module exposes no bus-current
+  register. This now agrees with the limitation in Section 5.4.
+- A duplicated sentence at the head of Section 2.1 is removed.
+- The supplement said the board is actively cooled; it is passively cooled.
+- Section 3.5's statement that no throttling occurred in any run is reconciled with the
+  per-frame flag: the host-shell check ran before and after every run including the
+  containerised ones, while the per-frame field is native-only.
+- CRediT and the generative-AI declaration are filled in.
+- Abstract reduced to 200 words for the journal's limit.
+
+### The released scripts did not actually run from a clean checkout
+
+Found by packaging `telemetry.zip` and running the pipeline against it in an empty
+directory, which is the first time that was tested end to end. Three defects, all of which
+would have hit the first person to try reproducing the results:
+
+- `ROOT` was an absolute path to the authoring machine in `recompute.py`,
+  `fig_analysis.py` and `fig_profiling.py`. It now defaults to the parent of the script's
+  own directory, so a clone runs as-is, and `REPO_ROOT` overrides it.
+- Output paths were absolute too: `numbers.json` and the figure directory. They are now
+  relative to the repository root and are created if missing (`FIGURE_DIR` overrides the
+  latter).
+- `recompute.py` and `fig_profiling.py` read `basil_data.csv`, but the deposit ships
+  `basil_data.csv.gz` — exactly what `DEPOSIT_README.md` told people to download. Both now
+  prefer the gzipped file and fall back to the uncompressed one.
+
+Verified: a directory containing only `analysis/`, `basil_experiments/` and the contents of
+`telemetry.zip` now reproduces `numbers.json` byte-identically to the values in the
+manuscript, and writes all seven generated figures.
+
+### Figure 10 is not an excerpt of the field log
+
+The two alerts in Fig. 10 were delivered at 16:46 and 16:47 on 2026-03-07; the deposited field
+log starts at 19:11 the same day. They are different runs, and the alerts' originating run was
+not retained. The alerts report 38.2 ms and 14.8 ms of inference latency while the deposited
+log's fastest frame is 15.1 ms, so the two records cannot be reconciled and no frame in the log
+matches an alert on temperature, confidence and latency together.
+
+Sections 4.7, 4.8 and 5.4, the Fig. 10 caption and the data-availability statement now state
+the separation. The values in the figure are read from the alert payloads and are identified as
+the one exception to the rule that every reported quantity comes out of `recompute.py`.
+
+The figure is also cropped: the status bar, the Telegram bot name and the preceding message's
+overlay are removed, leaving only the two alert cards.
+
+### Proxy imagery withdrawn from the deposit
+
+The 280 cross-domain disease images of the Real + Proxy condition were obtained in March
+2026 from a public plant-disease collection whose identity was not recorded. Its licence
+therefore cannot be established, so the images are not redistributed: the deposit cannot
+grant rights that cannot be shown to exist. Section 3.8 states the omission and its
+consequence, Section 5.4 carries it as a limitation, and the data-availability statement,
+the Figure 2 caption, `DEPOSIT_README.md` and the supplement all agree.
+
+The Real-Only condition remains exactly reproducible from the deposit. The Real + Proxy
+condition is not, and the manuscript says so. The released training scripts read whatever
+is placed in a `Proxy_disease/` directory, so the comparison can be re-run against a proxy
+set of the replicator's choosing — what is lost is this exact run, not the question.
+
+Image counts are unchanged and are not in doubt:
+`basil_experiments/02_baseline_comparison/results/RUN_INFO.txt`, written on the training
+dates, records Background 640 / Healthy 498 / Disease 560, balanced to 280 real + 280 proxy
+at seed 42.
+
+---
+
 # Corrections and additions
 
 This release revises the manuscript materials. Several corrections affect claims made in the

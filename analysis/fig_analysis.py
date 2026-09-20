@@ -1,15 +1,16 @@
 """Figures for the attribution argument, architecture comparison, OOD behaviour
 and alerting-filter sensitivity."""
-import json, sys
+import os
 from pathlib import Path
+import json, sys
 import numpy as np, pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from figstyle import *
 
-ROOT = str(Path(__file__).resolve().parent.parent)
-N = json.load(open(Path(__file__).resolve().parent / "numbers.json"))
+ROOT = os.environ.get("REPO_ROOT", str(Path(__file__).resolve().parent.parent))
+N = json.load(open(Path(ROOT) / "out" / "numbers.json"))
 use_style()
 N_VAL = 340          # held-out validation images per condition (20% of 1698)
 PP_PER_IMAGE = 100 / N_VAL
@@ -116,9 +117,14 @@ def fig_architectures():
                     ms=5, color=MUTED, mew=0.9, ls="", clip_on=False)
 
     for i, v in enumerate(d):
-        if v < -5:      # outlier panel: label sits inside, to the right of the bar end
-            axL.text(v - 0.6, i, f"{v:+.2f}", va="center", ha="right",
-                     fontsize=6.4, color=INK)
+        if v < -5:      # outlier panel: label sits inside the bar, at its right end
+            if v - 0.45 < axL.get_xlim()[0] + 2.2:
+                # bar reaches the panel edge: label sits inside it
+                axL.text(-5.4, i, f"{v:+.2f}", va="center", ha="right",
+                         fontsize=6.4, color="white", fontweight="bold")
+            else:
+                axL.text(v - 0.45, i, f"{v:+.2f}", va="center", ha="right",
+                         fontsize=6.4, color=INK)
         else:
             off = 0.10 * (1 if v >= 0 else -1)
             axR.text(v + off, i, f"{v:+.2f}", va="center",
@@ -129,10 +135,12 @@ def fig_architectures():
     n_small = int((np.abs(d) <= 4 * PP_PER_IMAGE + 0.012).sum())
     axR.text(-1.52, len(d) - 0.35,
              f"{n_in} of {len(d)} architectures differ by \u2264 2 validation\n"
-             f"images (\u00b1{2*PP_PER_IMAGE:.2f} pp); {n_small} by \u2264 4",
+             f"images (\u00b1{2*PP_PER_IMAGE:.2f} pp); {n_small} by \u2264 4.\n"
+             f"Median across all {len(d)}: {np.median(d):+.2f} pp (sign test p = 0.727)",
              fontsize=6.8, color=INK, va="top")
-    axL.text(-31.5, 2.6, "one condition failed to converge\nin these two runs",
-             fontsize=6.4, color=INK2, va="bottom", style="italic")
+    axL.text(-31.6, 3.1,
+             "Real-Only failed to converge\nin these two runs. Both are\nretained in the analysis.",
+             fontsize=6.3, color=INK2, va="bottom", ha="left", style="italic")
     axR.text(-0.12, len(d) + 0.15, "favours Real+Proxy", ha="right", fontsize=6.6, color=NEG)
     axR.text(0.12, len(d) + 0.15, "favours Real-Only", ha="left", fontsize=6.6, color=POS)
     fig.supxlabel("Accuracy difference, Real-Only $-$ Real+Proxy (percentage points)",
@@ -192,7 +200,7 @@ def fig_ood():
     ax2.set_xlabel("Frame index")
     ax2.set_ylabel("Prediction confidence")
     grid_y(ax2)
-    ax2.set_title("(b) The four intrusion events, all assigned to Disease, none to Healthy",
+    ax2.set_title("(b) The four intrusion events, all assigned to Disease",
                   fontsize=7.6, pad=9, loc="left")
     return save(fig, "fig_ood")
 

@@ -82,7 +82,7 @@ Three observations follow, and they explain readings that would otherwise look a
 
 - **The 15.29 V bus is a negotiated USB Power Delivery contract**, one of the fixed voltages the controller supports. That is why it is both non-standard for a single-board computer and stable to 0.17 %.
 - **The 16.79 V pack reading is 4.198 V per cell across four series cells**, essentially the charge ceiling. The 1.5 V difference between the two readings is the conversion step between adapter and pack, not a measurement discrepancy.
-- **A node input figure of 10.20 W is consistent with a Raspberry Pi 5 under sustained CPU inference.** At 80–90 % end-to-end efficiency across the two cascaded conversion stages, it corresponds to roughly 8–9 W at the board's 5 V rail, which is an ordinary figure for this workload with active cooling. The efficiency is assumed rather than measured; the manufacturer publishes no efficiency curve.
+- **A node input figure of 10.20 W is consistent with a Raspberry Pi 5 under sustained CPU inference.** At 80–90 % end-to-end efficiency across the two cascaded conversion stages, it corresponds to roughly 8–9 W at the board's 5 V rail, which is an ordinary figure for this workload on a passively cooled board. The efficiency is assumed rather than measured; the manufacturer publishes no efficiency curve.
 
 **A note on the column naming.** The manufacturer's documentation for this module carries a section heading referring to an INA219 current-sense device, inherited from earlier modules in the same product family in which the monitored bus genuinely *is* the battery. This module contains no such device, and its bus registers are the Type-C input. Anyone reusing logging code or column conventions across that product family should check the register map rather than the heading; the `Bus_*` naming in the deposited logs originates from that lineage.
 
@@ -139,7 +139,7 @@ SqueezeNet (−29.70 pp) and ViT-B/16 (−7.35 pp) are runs in which one conditi
 
 ## S5. Complete alerting-filter sensitivity grid
 
-The filter gates each frame on confidence threshold τ, substituting an `unconfirmed` token below it, then confirms a class only when it holds at least ⌈0.6W⌉ of the W positions in the window. Replayed against the field log (5,989 frames, 181 s).
+The filter gates each frame on confidence threshold τ, substituting an `unconfirmed` token below it, then confirms a class only when it holds at least ⌈0.6W⌉ of the W positions in the window. Replayed against the field log (5,989 frames, 151.8 s of active inference across three duty cycles).
 
 | tau | W | min votes | raw transitions | confirmed transitions | flip suppression (%) |
 |---|---|---|---|---|---|
@@ -170,11 +170,11 @@ Supplementary session, 313,011 frames over 3 h 33 min. Frames separated by more 
 
 All four events fall within the first 43 s of a 3 h 33 min session. The remaining 311,683 consecutive frames contain no non-Background prediction of any kind. The frame-level confidence threshold active in this session was more permissive than the deployed τ = 0.70, with confirmations appearing down to 0.52.
 
-Background in this dataset consists of distant outdoor scenes from beyond the greenhouse rather than generic non-plant content, so it is distinguished from the two plant classes by scene scale and context; Section 5.3 of the main text argues that this makes it geometrically unavailable to a close-range novel object. The event count, not the frame count, is the effective sample size for any claim about class routing. Under a null hypothesis in which novel inputs distribute at random between the two plant classes, four events all falling in one class occurs with probability 2⁻³ = 0.125 for a specified class, or 0.0625 for one nominated in advance. The main text reports this as an observation rather than as an established structural property, and Section 5.3 specifies the controlled probe that would test it.
+Background in this dataset consists of distant outdoor scenes from beyond the greenhouse rather than generic non-plant content, so it is distinguished from the two plant classes by scene scale and context; Section 5.3 of the main text conjectures that this makes it unavailable to a close-range novel object, and sets out why that conjecture is not established. The event count, not the frame count, is the effective sample size for any claim about class routing. Under a null hypothesis in which novel inputs distribute at random between the two plant classes, four events all falling in the same class — either class — occurs with probability 0.125. Healthy was not predicted on any frame of the session, so the absence of Healthy among the four events carries no information about routing preference. The four events also arose from objects present during the same short set-up period and may not be independent of one another. The main text reports this as an observation rather than as an established structural property, and Section 5.3 specifies the controlled probe that would test it.
 
 ## S7. Field-log confidence analysis
 
-Live greenhouse deployment, 5,989 frames over 181 s at approximately 33 frame s⁻¹.
+Live greenhouse deployment, 5,989 frames over 181.8 s wall clock, of which 151.8 s were active inference, giving approximately 39.5 frame s⁻¹.
 
 | Quantity | Value |
 |---|---|
@@ -220,7 +220,7 @@ Condition B must pin NumPy, OpenCV and every other dependency to the versions `p
 
 ## S9. Reproduction
 
-The deposited archive (https://doi.org/10.5281/zenodo.22854130) contains the raw logs and the image dataset; the analysis code and container definitions are at https://github.com/xiaolin200206/edge-container-deployment-measurement. Every table and figure in the main text and in this supplement is regenerated by:
+The deposited archive (https://doi.org/10.5281/zenodo.22857312) contains the raw logs and the image dataset; the analysis code and container definitions are at https://github.com/xiaolin200206/edge-container-deployment-measurement. Every table and figure in the main text and in this supplement is regenerated by:
 
 ```
 python analysis/recompute.py           # writes numbers.json; all reported quantities
@@ -239,9 +239,9 @@ python analysis/make_dataset_figure.py \
     --disease <real_disease/> [--proxy <proxy_disease/>]
 ```
 
-The `--proxy` column is optional and should be omitted where the source licence of the
-cross-domain imagery does not permit redistribution; in that case the proxy sources are cited in
-the deposit README rather than included.
+The `--proxy` column is optional and is omitted here: the proxy imagery is not part of the deposit,
+its source collection not having been recorded and its licence therefore not being establishable
+(Section 3.8 of the main text). Figure 2 accordingly shows the three deposited classes.
 
 `recompute.py` reads only the deposited logs and emits every quantity stated in the main text, so that no reported figure exists outside the traceable chain from raw telemetry. Container images are built with:
 

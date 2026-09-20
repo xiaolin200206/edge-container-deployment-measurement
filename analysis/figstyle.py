@@ -5,6 +5,7 @@ Palette: categorical slots 1-2 of the validated reference palette
 CVD dE 24.7 (protan), normal-vision dE 33.6, contrast >= 3:1 - all PASS.
 Diverging arm for signed deltas: blue <-> red with a neutral gray midpoint.
 """
+import os
 from pathlib import Path
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -57,10 +58,11 @@ def grid_y(ax):
 
 
 def save(fig, stem, outdir=None):
-    """Write both vector and raster copies into <repo>/figures by default."""
-    out = Path(outdir) if outdir else Path(__file__).resolve().parent.parent / "figures"
-    out.mkdir(parents=True, exist_ok=True)
+    if outdir is None:
+        outdir = os.environ.get(
+            "FIGURE_DIR", str(Path(__file__).resolve().parent.parent / "figures"))
+    Path(outdir).mkdir(parents=True, exist_ok=True)
     for ext in ("pdf", "png"):
-        fig.savefig(out / f"{stem}.{ext}")
+        fig.savefig(f"{outdir}/{stem}.{ext}")
     plt.close(fig)
-    return str(out / f"{stem}.pdf")
+    return f"{outdir}/{stem}.pdf"

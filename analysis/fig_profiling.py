@@ -1,19 +1,23 @@
 """Figures derived from the four profiling runs."""
-import json, sys
+import os
 from pathlib import Path
+import json, sys
 import numpy as np, pandas as pd
 import matplotlib.pyplot as plt
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from figstyle import *
 
-ROOT = str(Path(__file__).resolve().parent.parent)
+ROOT = os.environ.get("REPO_ROOT", str(Path(__file__).resolve().parent.parent))
 PR = f"{ROOT}/data/profiling_runs"
-N = json.load(open(Path(__file__).resolve().parent / "numbers.json"))
+N = json.load(open(Path(ROOT) / "out" / "numbers.json"))
 use_style()
 
 
 def load(run):
-    df = pd.read_csv(f"{PR}/{run}/basil_data.csv")
+    src = Path(PR) / run / "basil_data.csv.gz"
+    if not src.exists():
+        src = Path(PR) / run / "basil_data.csv"
+    df = pd.read_csv(src)
     t = pd.to_datetime(df.Timestamp, format="%H:%M:%S.%f")
     e = (t - t.iloc[0]).dt.total_seconds().to_numpy()
     df["el"] = np.where(e < 0, e + 86400, e)
@@ -24,7 +28,7 @@ def load(run):
 def fig_traces():
     fig, axes = plt.subplots(2, 1, figsize=(COL2, 4.1), sharex=True,
                              gridspec_kw={"hspace": 0.18})
-    for run, col, lab in [("bare_metal_A", BARE, "Bare-metal"),
+    for run, col, lab in [("bare_metal_A", BARE, "Native"),
                           ("docker_A", CONT, "Containerised")]:
         d = load(run)
         d = d[d.el <= 10800]
@@ -63,7 +67,7 @@ def fig_runs():
                ("power_w_mean", "Node input power", "W"),
                ("throughput_fps_effective", "Effective throughput", "frame s$^{-1}$")]
     fig, axes = plt.subplots(1, 5, figsize=(COL2, 2.35))
-    fig.subplots_adjust(wspace=0.75)
+    fig.subplots_adjust(wspace=0.85)
     runs = N["per_run"]
     for ax, (key, lab, unit) in zip(axes, metrics):
         allv = [v[key] for v in runs.values()]
@@ -80,7 +84,8 @@ def fig_runs():
         ax.set_ylim(lo - pad, hi + pad)
         ax.set_xlim(-0.6, 1.6)
         ax.set_xticks([0, 1])
-        ax.set_xticklabels(["Bare-metal", "Container"], fontsize=6.3)
+        ax.set_xticklabels(["Native", "Container"], fontsize=6.8,
+                           rotation=28, ha="right", rotation_mode="anchor")
         ax.yaxis.set_major_locator(plt.MaxNLocator(4))
         ax.set_title(lab, fontsize=7.2, pad=5)
         ax.set_ylabel(unit, labelpad=1.5, fontsize=7)
@@ -89,7 +94,7 @@ def fig_runs():
          plt.Line2D([], [], marker="s", ls="", color=MUTED, ms=5, mec="white",
                     label="Replicate B (day)"),
          plt.Line2D([], [], color=MUTED, lw=2.2, label="Condition mean")]
-    fig.legend(handles=h, loc="lower center", ncol=3, bbox_to_anchor=(0.5, -0.12))
+    fig.legend(handles=h, loc="lower center", ncol=3, bbox_to_anchor=(0.5, -0.18))
     return save(fig, "fig_runs")
 
 
@@ -119,7 +124,7 @@ def fig_normalised():
                     color="white", fontsize=7, fontweight="bold")
         grid_y(ax)
         ax.set_xticks([0, 1])
-        ax.set_xticklabels(["Bare-metal", "Containerised"], fontsize=6.5)
+        ax.set_xticklabels(["Native", "Containerised"], fontsize=6.8)
         ax.set_title(lab, fontsize=7.5, pad=4)
         ax.set_ylabel(unit, labelpad=2)
     axes[2].set_title("Energy per\ninference", fontsize=7.5, pad=4,

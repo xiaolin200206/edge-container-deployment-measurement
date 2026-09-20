@@ -7,3 +7,5 @@ telemetry.zip
 data/profiling_runs/*/basil_data.csv
 APPLY.md
 telemetry.zip
+apply_update.bat
+COMMIT_MSG.txt

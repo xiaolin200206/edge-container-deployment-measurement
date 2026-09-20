@@ -160,7 +160,7 @@ historical artefact of the runs reported in the manuscript — **do not use it f
 
 ## Citation
 
-If you use this data or code, please cite the archived data deposit (Zenodo, DOI to be inserted)
+If you use this data or code, please cite the archived data deposit (https://doi.org/10.5281/zenodo.22857312)
 together with this repository (https://github.com/xiaolin200206/edge-container-deployment-measurement). The deposit holds the image dataset and the complete
 deployment telemetry; this repository holds the analysis code, the container definitions and the
 edge application. Together they reproduce every figure and table in the manuscript.

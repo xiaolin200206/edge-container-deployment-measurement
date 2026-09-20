@@ -34,7 +34,7 @@ The author declares that he has no known competing financial interests or person
 
 **Data and code availability**
 
-All research data underlying this article are openly available. The greenhouse image dataset and the complete deployment telemetry — per-frame logs and per-cycle event markers from the four controlled profiling runs, the live field session and the extended continuous-inference session — are deposited at https://doi.org/10.5281/zenodo.22854130 under a CC BY 4.0 licence.
+All research data underlying this article are openly available. The site-collected greenhouse image dataset and the complete deployment telemetry (per-frame logs and per-cycle event markers from the four controlled profiling runs, the live field session and the extended continuous-inference session) are deposited at https://doi.org/10.5281/zenodo.22857312 under a CC BY 4.0 licence. The cross-domain proxy imagery used in the secondary training condition is not included; Section 3.8 of the manuscript states why.
 
 The analysis code, container definitions, environment-capture routine and edge inference application are available at https://github.com/xiaolin200206/edge-container-deployment-measurement (tagged `v1.0-caee` at submission). Every table and figure in this article and its supplementary material is regenerated from the deposited telemetry by the released scripts; `analysis/recompute.py` emits every quantity stated in the text, so no reported value exists outside that chain.
 
