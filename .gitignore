@@ -1,0 +1,9 @@
+logs/
+*.pyc
+__pycache__/
+images/
+
+telemetry.zip
+data/profiling_runs/*/basil_data.csv
+APPLY.md
+telemetry.zip

@@ -1,0 +1,23 @@
+Session          : supplementary extended-duty-cycle session (manuscript Section 4.5)
+Date             : 2026-06-25
+Start            : 11:36:37 (+08)
+Duration         : 3 h 33 min
+Frames           : 313,011
+Duty cycle       : approx. 180 s active / 45 s sleep (56 sleep intervals of ~45.1 s)
+Setting          : indoor bench, camera not directed at basil foliage
+Camera           : not recorded in the log; inferred as the CSI camera because the
+                   session predates the switch to a USB camera, but not verifiable
+Purpose          : characterise behaviour under longer uninterrupted inference periods, and
+                   collect large-sample out-of-distribution observations
+Predicted class  : Background 312,981 (99.99%) | Disease 30 (0.0096%) | Healthy 0 (0%)
+Note             : the duty cycle differs from the 60 s/15 s protocol of the four controlled
+                   profiling runs, so this session is NOT comparable with Tables 3 and 4 and is
+                   reported separately in manuscript Sections 4.5 and 5.2.1
+Execution mode   : not recorded (native vs. containerised); the log predates the telemetry
+                   schema of the profiling runs and carries no Throttled column, which would
+                   otherwise discriminate the two (vcgencmd reads 'Unknown' inside Docker)
+Threshold        : the operative frame-level threshold was below the deployed tau = 0.70:
+                   Disease confirmations appear at confidences down to 0.566, consistent
+                   with the 0.50 default of the released deployment script
+Columns          : this log predates the addition of the UPS power columns, so it has no
+                   Bus_V_mV / Bus_P_mW / Bat_* fields, and no Throttled column

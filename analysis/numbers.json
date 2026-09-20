@@ -1,0 +1,325 @@
+{
+  "per_run": {
+    "bare_metal_A": {
+      "condition": "bare-metal",
+      "time_of_day": "night",
+      "n_frames": 105629,
+      "active_seconds": 8166.6,
+      "latency_ms_mean": 18.13,
+      "latency_ms_sd": 6.16,
+      "latency_ms_median": 15.2,
+      "latency_ms_p95": 34.7,
+      "latency_ms_p99": 37.3,
+      "cpu_pct_mean": 49.81,
+      "cpu_pct_sd": 6.8,
+      "ram_pct_mean": 7.7,
+      "temp_c_mean": 63.64,
+      "temp_c_max_instant": 70.0,
+      "cyclic_peak_temp_c_mean": 64.61,
+      "cyclic_peak_temp_c_max": 68.3,
+      "n_cycles": 136,
+      "power_w_mean": 10.169,
+      "power_w_sd": 2.233,
+      "throughput_fps_effective": 12.93,
+      "energy_per_inference_J": 0.7862,
+      "bus_v_mean": 15.291,
+      "bus_v_sd": 0.0227,
+      "bat_i_ma_mean": -1.45,
+      "bat_i_ma_min": -15,
+      "bat_i_ma_max": 20,
+      "bat_pct_min": 93,
+      "bat_pct_max": 94,
+      "corr_busP_batI": -0.073,
+      "throttle_flags": [
+        "No"
+      ]
+    },
+    "bare_metal_B": {
+      "condition": "bare-metal",
+      "time_of_day": "day",
+      "n_frames": 101692,
+      "active_seconds": 8166.4,
+      "latency_ms_mean": 18.28,
+      "latency_ms_sd": 6.24,
+      "latency_ms_median": 15.0,
+      "latency_ms_p95": 33.6,
+      "latency_ms_p99": 38.9,
+      "cpu_pct_mean": 48.23,
+      "cpu_pct_sd": 7.86,
+      "ram_pct_mean": 7.61,
+      "temp_c_mean": 64.73,
+      "temp_c_max_instant": 71.0,
+      "cyclic_peak_temp_c_mean": 65.72,
+      "cyclic_peak_temp_c_max": 68.3,
+      "n_cycles": 136,
+      "power_w_mean": 10.225,
+      "power_w_sd": 2.249,
+      "throughput_fps_effective": 12.45,
+      "energy_per_inference_J": 0.8211,
+      "bus_v_mean": 15.288,
+      "bus_v_sd": 0.0223,
+      "bat_i_ma_mean": -1.47,
+      "bat_i_ma_min": -14,
+      "bat_i_ma_max": 19,
+      "bat_pct_min": 93,
+      "bat_pct_max": 94,
+      "corr_busP_batI": -0.093,
+      "throttle_flags": [
+        "No"
+      ]
+    },
+    "docker_A": {
+      "condition": "container",
+      "time_of_day": "night",
+      "n_frames": 91073,
+      "active_seconds": 8166.2,
+      "latency_ms_mean": 26.44,
+      "latency_ms_sd": 3.62,
+      "latency_ms_median": 24.9,
+      "latency_ms_p95": 34.0,
+      "latency_ms_p99": 41.9,
+      "cpu_pct_mean": 36.79,
+      "cpu_pct_sd": 6.14,
+      "ram_pct_mean": 7.94,
+      "temp_c_mean": 60.07,
+      "temp_c_max_instant": 64.5,
+      "cyclic_peak_temp_c_mean": 60.63,
+      "cyclic_peak_temp_c_max": 63.4,
+      "n_cycles": 136,
+      "power_w_mean": 9.457,
+      "power_w_sd": 2.343,
+      "throughput_fps_effective": 11.15,
+      "energy_per_inference_J": 0.848,
+      "bus_v_mean": 15.289,
+      "bus_v_sd": 0.0264,
+      "bat_i_ma_mean": -0.79,
+      "bat_i_ma_min": -13,
+      "bat_i_ma_max": 19,
+      "bat_pct_min": 93,
+      "bat_pct_max": 94,
+      "corr_busP_batI": -0.046,
+      "throttle_flags": [
+        "Unknown"
+      ]
+    },
+    "docker_B": {
+      "condition": "container",
+      "time_of_day": "day",
+      "n_frames": 102467,
+      "active_seconds": 8165.4,
+      "latency_ms_mean": 26.57,
+      "latency_ms_sd": 4.09,
+      "latency_ms_median": 25.2,
+      "latency_ms_p95": 36.4,
+      "latency_ms_p99": 44.1,
+      "cpu_pct_mean": 42.78,
+      "cpu_pct_sd": 6.66,
+      "ram_pct_mean": 7.81,
+      "temp_c_mean": 61.2,
+      "temp_c_max_instant": 66.1,
+      "cyclic_peak_temp_c_mean": 62.28,
+      "cyclic_peak_temp_c_max": 65.0,
+      "n_cycles": 136,
+      "power_w_mean": 9.999,
+      "power_w_sd": 2.377,
+      "throughput_fps_effective": 12.55,
+      "energy_per_inference_J": 0.7968,
+      "bus_v_mean": 15.289,
+      "bus_v_sd": 0.0261,
+      "bat_i_ma_mean": -1.51,
+      "bat_i_ma_min": -15,
+      "bat_i_ma_max": 20,
+      "bat_pct_min": 93,
+      "bat_pct_max": 94,
+      "corr_busP_batI": -0.041,
+      "throttle_flags": [
+        "Unknown"
+      ]
+    }
+  },
+  "conditions": {
+    "bare-metal": {
+      "latency_ms_mean": 18.205,
+      "latency_ms_mean_halfrange": 0.075,
+      "cpu_pct_mean": 49.02,
+      "cpu_pct_mean_halfrange": 0.79,
+      "ram_pct_mean": 7.655,
+      "ram_pct_mean_halfrange": 0.045,
+      "temp_c_mean": 64.185,
+      "temp_c_mean_halfrange": 0.545,
+      "cyclic_peak_temp_c_mean": 65.165,
+      "cyclic_peak_temp_c_mean_halfrange": 0.555,
+      "power_w_mean": 10.197,
+      "power_w_mean_halfrange": 0.028,
+      "throughput_fps_effective": 12.69,
+      "throughput_fps_effective_halfrange": 0.24,
+      "energy_per_inference_J": 0.8036,
+      "energy_per_inference_J_halfrange": 0.0175
+    },
+    "container": {
+      "latency_ms_mean": 26.505,
+      "latency_ms_mean_halfrange": 0.065,
+      "cpu_pct_mean": 39.785,
+      "cpu_pct_mean_halfrange": 2.995,
+      "ram_pct_mean": 7.875,
+      "ram_pct_mean_halfrange": 0.065,
+      "temp_c_mean": 60.635,
+      "temp_c_mean_halfrange": 0.565,
+      "cyclic_peak_temp_c_mean": 61.455,
+      "cyclic_peak_temp_c_mean_halfrange": 0.825,
+      "power_w_mean": 9.728,
+      "power_w_mean_halfrange": 0.271,
+      "throughput_fps_effective": 11.85,
+      "throughput_fps_effective_halfrange": 0.7,
+      "energy_per_inference_J": 0.8224,
+      "energy_per_inference_J_halfrange": 0.0256
+    },
+    "delta": {
+      "latency_ms_abs": 8.3,
+      "latency_pct": 45.6,
+      "cpu_pp": -9.24,
+      "ram_pp": 0.22,
+      "cyclic_peak_temp_c": -3.71,
+      "power_w_abs": -0.469,
+      "power_pct_of_system_input": -4.6,
+      "throughput_fps_abs": -0.84,
+      "throughput_pct": -6.6,
+      "energy_per_inference_pct": 2.3
+    }
+  },
+  "supplementary_session": {
+    "n_frames": 313011,
+    "class_counts": {
+      "Background": 312981,
+      "Disease": 30
+    },
+    "pct_background": 99.9904,
+    "n_nonbackground_frames": 30,
+    "n_distinct_events": 4,
+    "event_frame_lengths": [
+      19,
+      2,
+      1,
+      8
+    ],
+    "event_classes": [
+      [
+        "Disease"
+      ],
+      [
+        "Disease"
+      ],
+      [
+        "Disease"
+      ],
+      [
+        "Disease"
+      ]
+    ],
+    "confidence_min": 0.522,
+    "confidence_max": 0.993,
+    "latency_ms_mean": 18.2,
+    "latency_ms_sd": 5.65,
+    "latency_ms_max": 94.8,
+    "cpu_pct_mean": 72.93,
+    "temp_c_mean": 67.04,
+    "temp_c_max": 71.0
+  },
+  "field_log": {
+    "n_frames": 5989,
+    "class_counts": {
+      "basil_healthy": 4189,
+      "background": 1769,
+      "disease": 31
+    },
+    "n_low_conf": 92,
+    "pct_low_conf": 1.54,
+    "pct_isolated_single_frame": 72.3,
+    "pct_clusters_ge3": 9.2,
+    "max_cluster_len": 4,
+    "flip_rate_low_conf_pct": 50.0,
+    "flip_rate_high_conf_pct": 4.5,
+    "corr_conf_temp": -0.05,
+    "corr_conf_cpu": 0.015,
+    "corr_conf_latency": -0.023
+  },
+  "architectures": {
+    "n_architectures": 11,
+    "rows": [
+      {
+        "model": "MobileNetV2",
+        "real_only_acc": 98.24,
+        "balanced_acc": 97.35,
+        "delta_pp": 0.89
+      },
+      {
+        "model": "MobileNetV3-Small",
+        "real_only_acc": 98.24,
+        "balanced_acc": 98.24,
+        "delta_pp": 0.0
+      },
+      {
+        "model": "MobileNetV3-Large",
+        "real_only_acc": 97.94,
+        "balanced_acc": 97.94,
+        "delta_pp": 0.0
+      },
+      {
+        "model": "EfficientNet-B0",
+        "real_only_acc": 99.12,
+        "balanced_acc": 98.53,
+        "delta_pp": 0.59
+      },
+      {
+        "model": "EfficientNet-B1",
+        "real_only_acc": 99.41,
+        "balanced_acc": 98.82,
+        "delta_pp": 0.59
+      },
+      {
+        "model": "ShuffleNetV2-0.5x",
+        "real_only_acc": 97.35,
+        "balanced_acc": 97.35,
+        "delta_pp": 0.0
+      },
+      {
+        "model": "SqueezeNet",
+        "real_only_acc": 64.71,
+        "balanced_acc": 94.41,
+        "delta_pp": -29.7
+      },
+      {
+        "model": "ResNet18",
+        "real_only_acc": 97.94,
+        "balanced_acc": 98.53,
+        "delta_pp": -0.59
+      },
+      {
+        "model": "DenseNet-121",
+        "real_only_acc": 97.65,
+        "balanced_acc": 98.82,
+        "delta_pp": -1.17
+      },
+      {
+        "model": "RegNet-Y400MF",
+        "real_only_acc": 98.82,
+        "balanced_acc": 99.12,
+        "delta_pp": -0.3
+      },
+      {
+        "model": "ViT-Tiny",
+        "real_only_acc": 81.18,
+        "balanced_acc": 88.53,
+        "delta_pp": -7.35
+      }
+    ],
+    "n_favours_real": 3,
+    "n_no_difference": 3,
+    "n_favours_proxy": 5,
+    "median_abs_delta_pp": 0.59,
+    "delta_pp_range": [
+      -29.7,
+      0.89
+    ]
+  }
+}

@@ -1,0 +1,34 @@
+# Condition C — the ORIGINAL container, now made reproducible.
+# Identical to the image used in the measured runs, except that the versions
+# pip resolved at build time are written down explicitly.
+#
+# The onnxruntime pin is DETERMINED, not guessed. The original Dockerfile
+# installed `onnxruntime` with no constraint, so pip resolved the newest
+# release carrying a wheel compatible with this base image. For
+# python:3.9-slim-bullseye on linux/arm64 that wheel must be tagged cp39 and
+# aarch64, and the last onnxruntime release publishing one is 1.19.2
+# (onnxruntime-1.19.2-cp39-cp39-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl,
+# uploaded 2024-09-04). No later release publishes a cp39 aarch64 wheel at all,
+# and the manylinux_2_27 floor is satisfied by Debian 11's glibc 2.31.
+# Exactly one release therefore fits, and it is pinned below.
+#
+# For comparison, the bare-metal runs used onnxruntime 1.29.0, released
+# 2026-08-17 — eighteen releases and roughly 23 months later.
+FROM python:3.9-slim-bullseye
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libglib2.0-0 \
+        procps \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir \
+        onnxruntime==1.19.2 \
+        numpy==1.26.4 \
+        opencv-python-headless==4.10.0.84 \
+        psutil==6.1.0 \
+        requests==2.32.3 \
+        smbus2==0.5.0
+
+WORKDIR /app
+COPY classification.py provenance.py basil_mobilenet.onnx ./
+CMD ["python3", "classification.py"]

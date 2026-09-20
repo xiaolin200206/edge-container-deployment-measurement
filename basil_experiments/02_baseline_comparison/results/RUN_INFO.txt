@@ -1,0 +1,15 @@
+Runs             : 11-architecture Real Only vs Real + Proxy comparison (manuscript Table 1)
+Dates            : Real Only 2026-06-24 | Real + Proxy (balanced) 2026-06-25
+Dataset          : final snapshot, Background 640 / Healthy 498 / Disease 560 (Section 3.1);
+                   Real + Proxy balanced to 560 Disease images (280 real + 280 proxy, seed 42)
+Split            : 80/20 via torch.utils.data.random_split WITHOUT a fixed generator seed;
+                   the exact validation indices of these runs are therefore not recoverable.
+                   Per-architecture results are from single training runs (see manuscript 4.1.1).
+Files            : baseline_comparison_*_final.csv  - per-architecture metrics as reported in Table 1
+                   MobileNetV2_real_only.pth        - Table 1 row 1, Real Only condition
+                   MobileNetV2_real_plus_proxy.pth  - Table 1 row 1, Real + Proxy condition
+Provenance       : the deployed export basil_mobilenet.onnx at the repository root was generated
+                   from MobileNetV2_real_only.pth (verified by element-wise weight comparison of
+                   the classifier layer). The originally deployed model of manuscript Sections
+                   4.1/4.2/5.2 predates these runs and its weights were not preserved.
+Note             : ViT-Tiny in the CSVs is torchvision vit_b_16 (85.8 M parameters), i.e. ViT-B/16.

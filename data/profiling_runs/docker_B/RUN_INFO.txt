@@ -1,0 +1,12 @@
+Condition        : containerised (Docker)
+Replicate        : B
+Time of day      : day
+Start            : 2026-08-19 12:46:37 (+08)
+Duration         : 3 h 00 min, 144 duty cycles
+Duty cycle       : 60 s active / 15 s sleep
+Camera           : USB (V4L2), 640x480, passed in via --device /dev/video0
+Power            : Waveshare UPS HAT (E), charging input connected, --device /dev/i2c-1
+Host throttling  : throttled=0x0 before and after the run
+Timezone         : TZ=Asia/Kuala_Lumpur set on the container
+OS               : Debian 13 (trixie), kernel 6.18.34-rpt-rpi-2712
+Image            : python:3.9-slim-bullseye, onnxruntime (pip), opencv-python-headless

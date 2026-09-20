@@ -1,0 +1,10 @@
+Session          : greenhouse field inference log (manuscript Section 4.2 / Table 2)
+Date             : 2026-03-07
+Start            : 19:11:26 (+08)
+Duration         : 181.5 s
+Frames           : 5,989 (approx. 33 fps)
+Setting          : commercial hydroponic basil greenhouse, deployed node
+Predicted class  : basil_healthy 4,189 | background 1,769 | disease 31 (raw frame-level)
+Purpose          : source log for the threshold x temporal-window replay of Table 2
+                   (basil_experiments/03_analysis/threshold_sensitivity_analysis.py)
+Columns          : this log predates the addition of the UPS power columns.
