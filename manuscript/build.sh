@@ -11,7 +11,7 @@ python3 analysis/analyse_v2.py
 python3 analysis/make_tex.py
 python3 analysis/make_supp.py
 python3 analysis/figures_v2.py
-cp out/numbers_v2.tex out/table_results.tex out/supp_tables.tex "$HERE/"
+cp out/numbers_v2.tex out/table_results.tex out/table_runs.tex out/supp_tables.tex "$HERE/"
 mkdir -p "$HERE/figures" && cp figures/*.pdf "$HERE/figures/"
 cd "$HERE"
 for doc in main supplement; do

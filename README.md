@@ -50,7 +50,7 @@ inference over the duty cycle.
 │   ├── analyse_v2.py        # every quantity -> out/numbers_v2.json
 │   ├── make_tex.py          # LaTeX macros + Table 2 -> out/
 │   ├── make_supp.py         # supplemental tables -> out/
-│   └── figures_v2.py        # Figs. 1-5 -> figures/
+│   └── figures_v2.py        # Figs. 1-7 -> figures/
 ├── out/                     # generated numbers and tables
 ├── figures/                 # generated figures (PDF + PNG)
 ├── manuscript/              # paper and supplement sources, build.sh, PDFs

@@ -245,5 +245,78 @@ def fig_thermal():
     save(fig, "fig5_thermal")
 
 
+# ------------------------------------------------------------ Fig 6: power over the duty cycle
+def cycle_profile(label):
+    """Mean node power and CPU frequency by second of the duty cycle, over the
+    analysed (post-warm-up) cycles of one run."""
+    ev = pd.read_csv(ROOT / label / "cycle_events.csv")
+    pw = pd.read_csv(csv_path(ROOT / label / "power_log.csv"))
+    t0 = pd.to_datetime(ev.Timestamp.iloc[0], format="%H:%M:%S.%f")
+
+    def rel(col):
+        t = pd.to_datetime(col, format="%H:%M:%S.%f")
+        x = (t - t0).dt.total_seconds().to_numpy()
+        return np.where(x < -43200, x + 86400, x)
+    ev["el"], pw["el"] = rel(ev.Timestamp), rel(pw.Timestamp)
+    starts = ev.el[ev.Event.eq("CYCLE_ACTIVE_START")].to_numpy()
+    starts = starts[starts >= N["design"]["warmup_s"]]
+    rows = []
+    for a, b in zip(starts[:-1], starts[1:]):
+        seg = pw[(pw.el >= a) & (pw.el < b)]
+        sec = np.floor(seg.el.to_numpy() - a).astype(int)
+        rows.append(pd.DataFrame({"sec": sec, "P": seg.Bus_P_mW.to_numpy() / 1000,
+                                  "MHz": seg.CPU_MHz.astype(float).to_numpy()}))
+    d = pd.concat(rows)
+    return d[d.sec < 75].groupby("sec").mean()
+
+
+def fig_cycle():
+    fig, axes = plt.subplots(2, 1, figsize=(COL1, 2.9), sharex=True,
+                             gridspec_kw={"hspace": 0.12, "height_ratios": [1.5, 1]})
+    for c in ORDER:
+        prof = [cycle_profile(f"{c}_{i}") for i in (1, 2, 3)]
+        m = pd.concat(prof).groupby(level=0).mean()
+        axes[0].plot(m.index + 0.5, m.P, color=CC[c], lw=1.2, label=LAB[c])
+        axes[1].plot(m.index + 0.5, m.MHz, color=CC[c], lw=1.2)
+    for ax in axes:
+        ax.axvspan(60, 75, color="#efeeea", zorder=0, lw=0)
+        ax.grid(axis="x", visible=False)
+        ax.set_xlim(0, 75)
+    axes[0].set_ylabel("Node input\npower (W)")
+    axes[1].set_ylabel("CPU freq.\n(MHz)")
+    axes[1].set_xlabel("Time within the 75 s duty cycle (s)")
+    axes[0].text(30, 8.2, "active phase", ha="center", fontsize=7, color=INK2)
+    axes[0].text(67.5, 8.9, "sleep", ha="center", fontsize=7, color=INK2)
+    axes[0].annotate("governor\nhold", xy=(62.5, 7.55), xytext=(50, 7.0),
+                     fontsize=6.6, color=INK2, ha="center",
+                     arrowprops=dict(arrowstyle="-", lw=0.6, color=INK2))
+    axes[1].set_ylim(1300, 2550)
+    axes[0].legend(loc="lower left", frameon=False, fontsize=6.8, handlelength=1.4,
+                   bbox_to_anchor=(0.0, 0.02))
+    save(fig, "fig6_cycle")
+
+
+# ------------------------------------------------------------ Fig 7: speed vs cost, per run
+def fig_tradeoff():
+    R = N["runs"]
+    fig, axes = plt.subplots(1, 2, figsize=(COL1 - 0.1, 2.0), gridspec_kw={"wspace": 0.85})
+    for ax, key, ylab in ((axes[0], "cpu_ms_per_inference", "CPU time per\ninference (ms)"),
+                          (axes[1], "energy_per_inference_above_floor_mJ", "Energy per inference\nabove floor (mJ)")):
+        for c in ORDER:
+            xs = [R[f"{c}_{i}"]["latency_ms_mean"] for i in (1, 2, 3)]
+            ys = [R[f"{c}_{i}"][key] for i in (1, 2, 3)]
+            ax.plot(xs, ys, marker=MK[c], ms=4.6, ls="none", color=CC[c], mec="white", mew=0.5,
+                    label=SHORT[c])
+        ax.set_xlabel("Mean latency (ms)", fontsize=7.5)
+        ax.tick_params(axis="x", labelsize=7)
+        ax.set_ylabel(ylab)
+        ax.set_xlim(17, 32)
+    h, l = axes[0].get_legend_handles_labels()
+    fig.legend(h, ["A  native", "B  matched", "C  legacy"], loc="upper center", ncol=3,
+               frameon=False, bbox_to_anchor=(0.52, 1.08), handletextpad=0.2, columnspacing=1.0,
+               fontsize=7)
+    save(fig, "fig7_tradeoff")
+
+
 if __name__ == "__main__":
-    fig_design(); fig_latency(); fig_decomposition(); fig_energy(); fig_thermal()
+    fig_design(); fig_latency(); fig_decomposition(); fig_energy(); fig_thermal(); fig_cycle(); fig_tradeoff()

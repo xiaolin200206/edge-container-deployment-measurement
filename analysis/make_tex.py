@@ -165,6 +165,17 @@ m("FirstCPUpp", f(abs(ct["cpu_pct_mean"] - bm["cpu_pct_mean"]), 2))
 m("FirstPW", f(abs(ct["power_w_mean"] - bm["power_w_mean"]), 3))
 m("FirstPeak", f(abs(ct["cyclic_peak_temp_c_mean"] - bm["cyclic_peak_temp_c_mean"]), 2))
 
+# ------------------------------------------------------------ energy over a year of operation
+HOURS_PER_YEAR = 8766.0
+for c, L in CN.items():
+    m(f"AnnualkWh{L}", f(C[c]["power_w_overall"]["mean"] * HOURS_PER_YEAR / 1000, 0))
+    m(f"AnnualFloorkWh{L}", f(C[c]["power_w_sleep_floor"]["mean"] * HOURS_PER_YEAR / 1000, 0))
+for ek, EL in EN.items():
+    e = E["power_w_overall"][ek]
+    m(f"AnnualkWh{EL}abs", f(abs(e["mean"]) * HOURS_PER_YEAR / 1000, 1))
+    m(f"AnnualkWh{EL}lo", f(e["ci95"][0] * HOURS_PER_YEAR / 1000, 1))
+    m(f"AnnualkWh{EL}hi", f(e["ci95"][1] * HOURS_PER_YEAR / 1000, 1))
+
 (OUT / "numbers_v2.tex").write_text("\n".join(lines) + "\n")
 print(f"wrote {OUT / 'numbers_v2.tex'} ({len(lines) - 1} macros)")
 
@@ -217,3 +228,27 @@ for key, lab, d in ROWS2:
 t += [r"\bottomrule", r"\end{tabular}", r"\end{table*}"]
 (OUT / "table_results.tex").write_text("\n".join(t) + "\n")
 print(f"wrote {OUT / 'table_results.tex'}")
+
+
+# ------------------------------------------------------------ run schedule table
+import re as _re
+RUNS_DIR = Path(os.environ.get("RUNS_ROOT", HERE.parent / "runs"))
+rows = [r"\begin{table}[t]", r"\centering",
+        r"\caption{Run schedule. Order within each block was randomised. Start times are local (UTC+8). "
+        r"Camera: frame rate held by the camera in low light (dyn.) or requested and pinned (pinned); see Section~\ref{sec:deviations}.}",
+        r"\label{tab:runs}", r"\footnotesize", r"\setlength{\tabcolsep}{4pt}",
+        r"\begin{tabular}{clllrrl}", r"\toprule",
+        r"Block & Run & Cond. & Start & Inferences & frame/s & Camera\\", r"\midrule"]
+for b, info in N["design"]["blocks"].items():
+    for k, lab in enumerate(info["runs"], 1):
+        txt = (RUNS_DIR / lab / "RUN_INFO.txt").read_text()
+        start = _re.search(r"Start\s*:\s*(\d{4}-\d\d-(\d\d) (\d\d:\d\d))", txt)
+        when = f"{int(start.group(2))} Sep {start.group(3)}"
+        cam = "dyn." if lab in ("legacy_1", "matched_1") else "pinned"
+        r = R[lab]
+        rows.append(f"{b} & {k} & {CN[r['condition']]} & {when} & {big(r['frames_total'])} & {r['fps']:.2f} & {cam}\\\\")
+    if b != "3":
+        rows.append(r"\addlinespace")
+rows += [r"\bottomrule", r"\end{tabular}", r"\end{table}"]
+(OUT / "table_runs.tex").write_text("\n".join(rows) + "\n")
+print(f"wrote {OUT / 'table_runs.tex'}")
