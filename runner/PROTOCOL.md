@@ -1,6 +1,6 @@
 # Three-condition run protocol
 
-This is the procedure used for the nine runs in `../runs/`. It describes what
+This is the procedure used for the nine runs in `runs/` at the repository root. It describes what
 was done, including the changes made during the campaign (listed at the end).
 
 ## Purpose
@@ -34,7 +34,7 @@ Three conditions, measured in a randomised complete block design:
 5. Fingerprint the host and both images with `fingerprint.py` and compare.
    Host and matched must be identical in every field (Python and glibc
    versions, ONNX Runtime build string, SHA-256 of each compiled extension
-   module). The fingerprints used for the campaign are `../fp_*.json`.
+   module). The fingerprints used for the campaign are `fp_*.json` at the repository root.
 6. Check the supply telemetry: `profile_run.py --selftest` must pass (bus
    voltage in range, bus current register `0x12` agreeing with power/voltage).
 7. Keep the charger connected. A run may start only when the battery is

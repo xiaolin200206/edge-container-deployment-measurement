@@ -1,169 +1,133 @@
-# Unified AgTech Edge AI Engine
+# Container overhead or stale dependencies? — edge inference on a Raspberry Pi 5
 
-**Real-time agricultural disease monitoring on resource-constrained edge devices.**
+Data, run kit and analysis for
 
-Edge AI platform for commercial greenhouse deployment with zero cloud dependency, developed during
-an internship at Urban Farm Tech (Jan–Apr 2026) and running on a Raspberry Pi 5.
+> Lin Ding Shan, "Container Overhead or Stale Dependencies? Decomposing the
+> Latency and Energy Cost of Containerised Inference on an Edge Node"
+> (submitted to *IEEE Transactions on Sustainable Computing*).
 
-The repository hosts two related systems built on a shared deployment stack:
+Comparisons of containerised and native execution on edge devices usually
+change two things at once: the execution mode and the software stack inside
+the image. This study separates them with three conditions on the same
+Raspberry Pi 5 running a duty-cycled MobileNetV2 classifier with ONNX Runtime:
 
-| | Task | Model | Status |
-| --- | --- | --- | --- |
-| **A. Disease classification** | 3-class whole-frame classification (Background / Healthy / Disease) with temporal debouncing and Telegram alerting | MobileNetV2 → ONNX | Materials for the manuscript described below |
-| **B. Pest detection** | 5-class object detection with bounding boxes (Fungal, Leaf Damage, Mealybugs, Miner, Mite) | YOLOv8s → ONNX | Separate line of work |
+| Condition | Execution | Stack |
+|---|---|---|
+| A `native`  | host process | Python 3.13.5 (Debian), glibc 2.41, ONNX Runtime 1.29.0 |
+| B `matched` | Docker, `debian:trixie-slim` | same versions as the host; compiled extension modules byte-identical |
+| C `legacy`  | Docker, `python:3.9-slim-bullseye` | Python 3.9.23, glibc 2.31, ONNX Runtime 1.19.2 |
 
-Both share the same duty-cycle scheduler, ONNX Runtime inference path, CSV telemetry logging and
-Telegram alerting layer.
+- **B − A** isolates the execution mode (container vs. native, same stack).
+- **C − B** isolates the software stack (legacy vs. current, both in Docker).
 
-> **Revision notice.** This release corrects several claims made in the previous version of the
-> manuscript materials, most importantly the attribution of the bare-metal versus container
-> comparison. No logged value has been altered; what changed is what is claimed from the logs.
-> **See [`CHANGELOG.md`](CHANGELOG.md) for each correction and the evidence that prompted it.**
+Nine three-hour runs, randomised complete block design (3 blocks × 3
+conditions), 60 s active / 15 s sleep duty cycle, camera-bound at 15 frame/s,
+with node input power sampled at 1 Hz through both phases.
 
-> **Three-condition follow-up (v2.0-tsusc).** The attribution question left open by the first
-> campaign is answered in [`three_condition/`](three_condition/): nine runs comparing native
-> execution, a version-matched container and the legacy container, with power logged through the
-> idle phase. Containerisation itself added 1.3 ms (6.7 %) to mean inference latency; the legacy
-> software stack accounted for 87 % of the latency difference and used less energy per inference.
-> Data, run kit, analysis and manuscript sources are in that directory; see its README.
-
----
-
-# 1. Disease classification system (manuscript materials)
-
-Code, raw telemetry and analysis for *"Deployment measurements of a containerised edge vision node
-on a Raspberry Pi 5: thermal, power and latency characteristics, and the attribution of container
-overhead."*
+**Main results.** Containerisation with the stack held constant: +1.30 ms
+(+6.7 %) mean inference latency, +1.9 % CPU time per inference, no resolvable
+power or temperature change. Legacy stack with the execution mode held
+constant: +41.5 % mean latency, −6.7 % active power, −16.3 % energy per
+inference above the idle floor. The idle floor is 67–71 % of the energy per
+inference over the duty cycle.
 
 ## Contents
 
 ```
-├── classification.py                 # edge inference + logging + alerting loop
-├── provenance.py                     # per-run environment manifest  (NEW)
-├── Dockerfile                        # the image used in the measured runs (historical)
-├── three_condition/                  # v2: three-condition campaign (data, run kit,
-│                                     #     analysis, manuscript)  -> see its README
-├── Mobilenet.ipynb                   # training / ONNX export notebook
-├── DEPLOYMENT_GUIDE.md               # provisioning SOP for a fresh Raspberry Pi
-├── new_sd_card_setup.md              # SD-card level setup notes
-├── CHANGELOG.md                      # corrections in this release  (NEW)
-├── analysis/                         # authoritative analysis for the revision  (NEW)
-│   ├── recompute.py                  #   every reported quantity, from the logs only
-│   ├── fig_system.py                 #   Fig. 1  architecture + measurement chain
-│   ├── fig_profiling.py              #   Figs. 2–4
-│   ├── fig_analysis.py               #   Figs. 5–8
-│   ├── make_dataset_figure.py        #   Fig. 9  from the image archives
-│   ├── figstyle.py                   #   shared figure style
-│   └── numbers.json                  #   the authoritative value of every quantity
-├── figures/                          # regenerated manuscript figures  (NEW)
-├── manuscript/                       # revised manuscript + supplement  (NEW)
-├── basil_experiments/                # training, ablation and offline analysis scripts
-├── scripts/
-│   └── analyse_profiling.py          # earlier profiling analysis (superseded)
-└── data/
-    ├── profiling_runs/               # the four controlled runs
-    │   ├── bare_metal_A/             #   night, native execution
-    │   ├── bare_metal_B/             #   day,   native execution
-    │   ├── docker_A/                 #   night, containerised
-    │   └── docker_B/                 #   day,   containerised
-    ├── field_log/                    # the live greenhouse session
-    └── supplementary_session/        # extended duty-cycle session
+├── runs/<label>/            # nine runs: native_1..3, matched_1..3, legacy_1..3
+│   ├── basil_data.csv.gz    #   per-frame log (latency, CPU, temperature, supply)
+│   ├── power_log.csv        #   1 Hz log, active AND sleep phases (power, battery,
+│   │                        #   CPU MHz / cap, under-voltage, fan rpm / PWM)
+│   ├── cycle_events.csv     #   duty-cycle transitions
+│   ├── RUN_INFO.txt         #   run summary (see note on "Replicate" below)
+│   └── provenance.json      #   kernel, governor, cgroup, versions, model hash
+├── runs/<label>.camera.txt  # camera controls saved before each pinned run
+├── fp_host.json, fp_matched.json, fp_legacy.json   # environment fingerprints
+├── run_plan.json, orchestrator.log                  # schedule and run log
+├── runner/                  # harness, orchestrator, Dockerfiles, fingerprinting,
+│                            # PROTOCOL.md (procedure as executed)
+├── analysis/
+│   ├── analyse_v2.py        # every quantity -> out/numbers_v2.json
+│   ├── make_tex.py          # LaTeX macros + Table 2 -> out/
+│   ├── make_supp.py         # supplemental tables -> out/
+│   └── figures_v2.py        # Figs. 1-5 -> figures/
+├── out/                     # generated numbers and tables
+├── figures/                 # generated figures (PDF + PNG)
+├── manuscript/              # paper and supplement sources, build.sh, PDFs
+├── basil_mobilenet.onnx     # the model used in every run (SHA-256 in provenance.json)
+└── first_campaign/          # the earlier two-condition campaign (see below)
 ```
 
-## Reproducing the manuscript
+## Reproducing the paper
 
-Every table and figure is regenerated from the deposited logs:
+Requirements: Python 3 with `pandas`, `numpy`, `matplotlib`; for the PDFs, a
+TeX Live installation with `IEEEtran`.
 
 ```bash
-python analysis/recompute.py            # writes analysis/numbers.json
-python analysis/fig_system.py           # Fig. 1        -> figures/
-python analysis/fig_profiling.py        # Figs. 2, 3, 4 -> figures/
-python analysis/fig_analysis.py         # Figs. 5-8     -> figures/
-python analysis/make_dataset_figure.py  # Fig. 9  (needs the image archives)
+sh manuscript/build.sh
 ```
 
-`recompute.py` reads only `data/` and `basil_experiments/02_baseline_comparison/results/`, and
-emits every quantity stated in the manuscript. No reported figure exists outside that chain.
+This runs the four analysis scripts in order and compiles
+`manuscript/main.pdf` and `manuscript/supplement.pdf`. The paper takes every
+measured result from `out/numbers_v2.tex` and `out/table_results.tex`; the
+first-campaign values are read from `first_campaign/analysis/numbers.json`.
+The analysis reads the gzipped per-frame logs directly.
 
-Requirements: `pandas`, `numpy`, `matplotlib`.
+To run the analysis alone:
 
-## Data
-
-### Hardware profiling runs
-
-Four independent three-hour runs under a 60 s active / 15 s sleep duty cycle — two native and two
-containerised — interleaved across day and night so that ambient temperature is balanced between
-conditions rather than confounded with them. All four runs used identical hardware, the same USB
-(V4L2) camera, the same ONNX model file and the same inference script.
-
-**The two conditions also differed in software environment, and this bounds what the comparison
-can attribute.** The native runs executed under Python 3.13 with onnxruntime 1.29.0 on Debian 13;
-the containerised runs under `python:3.9-slim-bullseye` — Python 3.9, Debian 11 — with
-onnxruntime resolved from an unpinned requirement at image-build time — determined from package
-metadata to have been **1.19.2**, against the host's **1.29.0**, eighteen releases and some 23
-months apart. Execution mode, interpreter version, inference-runtime version and base image
-therefore co-vary. The manuscript reports the
-measured differences as properties of the two configurations as built, states the attribution
-bound explicitly, and specifies the three-condition design that would decompose it. See
-`CHANGELOG.md` §1 and Supplementary S8.
-
-Each run directory contains `basil_data.csv.gz` (per-frame telemetry, gzipped to stay within
-GitHub file-size limits), `cycle_events.csv` (duty-cycle transitions with the temperature at each
-boundary) and `RUN_INFO.txt` (conditions, start time, hardware, OS and runtime versions,
-throttling status). `pandas.read_csv` opens the gzipped files directly.
-
-Telemetry rows exist **only during active periods**; the 15 s sleep intervals appear as gaps. No
-idle power baseline is therefore available from these runs, and per-inference energy figures carry
-the supply module's constant offset. Future runs should log supply telemetry through the sleep
-phase as well.
-
-Supply telemetry is read over I2C from the UPS HAT (E). Its `Bus_*` registers report the
-**Type-C connector** — the total DC power the Pi and the HAT together draw from the mains PD
-adapter — not the 5 V rail feeding the board, which the module does not instrument. The 15.29 V
-bus reading is a negotiated USB-PD 15 V contract. The reported figures are therefore **node input
-power**, inclusive of two cascaded conversion stages and HAT housekeeping, and absolute
-differences between conditions are the meaningful quantity. See `CHANGELOG.md` §3 and
-Supplementary S3.
-
-### Field log
-
-The live greenhouse session: 5,989 frames over 181 s of continuous in-situ operation. Used for the
-alerting-filter sensitivity analysis and the confidence-structure analysis.
-
-### Supplementary session
-
-3 h 33 min, 313,011 frames, under a 180 s / 45 s duty cycle. Execution mode was not recorded for
-this session — it predates the `provenance.py` manifest — and its frame-level confidence threshold
-was more permissive than the deployed τ = 0.70. Reported as a separate operating point, not pooled
-with the profiling runs.
-
-## Environment capture
-
-`provenance.py` writes a JSON manifest per run recording execution mode, interpreter version,
-onnxruntime version, glibc, NumPy and OpenCV versions, the ONNX Runtime provider list and resolved
-intra/inter-op thread counts, `os.cpu_count()` and scheduler affinity, the cgroup CPU quota,
-`OMP_NUM_THREADS`, the CPU frequency governor, the SHA-256 digest of the model file, and host
-throttling status.
-
-```python
-from provenance import dump_provenance
-prov = dump_provenance("basil_mobilenet.onnx", session=ort_session)
+```bash
+python3 analysis/analyse_v2.py && python3 analysis/make_tex.py \
+  && python3 analysis/make_supp.py && python3 analysis/figures_v2.py
 ```
 
-Call it once at the start of every run and deposit the output alongside the telemetry. Its absence
-is what made the attribution in `CHANGELOG.md` §1 impossible to resolve after the fact.
+## Notes on the data
 
-## Container definitions
+- **Warm-up.** The first 600 s of each run, timed from the first cycle event,
+  are excluded; 136 complete cycles per run are analysed.
+- **Settled floor.** The `ondemand` governor holds 2400 MHz for about 5 s after
+  each active phase. The energy split uses the mean power of sleep-phase samples
+  taken at least 6 s into the phase.
+- **Camera.** `legacy_1` and `matched_1` ran before the camera's dynamic frame
+  rate was disabled; both held 15.0 frame/s. The original `native_1` was
+  discarded when its frame rate changed; the replacement ran on the evening of
+  27 September, after block 2.
+- **Harness and images.** The harness was updated before `legacy_2` (frame-rate
+  request and a measured-rate line in `RUN_INFO.txt`) and both images were
+  rebuilt. The files in `runner/` are the updated versions used from `legacy_2`
+  onward; the earlier version was not retained.
+- **Replicate field.** The `Replicate` line in `RUN_INFO.txt` holds the run's
+  position in the nine-run schedule (1-9), not the replicate within the
+  condition; the directory label identifies the replicate.
+- **Power** is node input power at the UPS HAT (E)'s Type-C input, not the SoC
+  rail.
+- **Legacy image.** Rebuilt from the first campaign's definition with pinned
+  versions (the original image no longer existed); `libglib2.0-0` was omitted
+  because the Debian 11 archive no longer serves it.
+- **Line endings.** Files under `runs/` are stored byte-exact
+  (`.gitattributes`: `runs/** -text`), so they match the Zenodo deposit.
 
-The image definitions used for the three-condition campaign, including the version-matched
-container generated from the host and the reconstructed legacy image, are in
-`three_condition/runner/` together with the fingerprinting script. The original unpinned
-`Dockerfile` is retained unchanged as the historical artefact of the first campaign's runs —
-**do not use it for new measurements.**
+## Running the kit
+
+See `runner/PROTOCOL.md`. The Dockerfiles copy `basil_mobilenet.onnx`; copy it
+from the repository root into `runner/` before building.
+
+## First campaign
+
+`first_campaign/` holds the earlier two-condition campaign (native vs. the
+legacy container, two runs each), the greenhouse field log, the classifier
+training experiments and the edge application. Its contrast is reproduced by
+C − A here and decomposed by this study. Commands in `first_campaign/README.md`
+run from inside that directory. The original layout of those materials, as
+first released, is preserved at tag `v1.0-caee`.
 
 ## Citation
 
-If you use this data or code, please cite the archived data deposit (imagery and first campaign, version 1.0.0: https://doi.org/10.5281/zenodo.22857312; three-condition campaign, version 2.0.0: https://doi.org/10.5281/zenodo.23007169)
-together with this repository (https://github.com/xiaolin200206/edge-container-deployment-measurement). The deposit holds the image dataset and the complete
-deployment telemetry; this repository holds the analysis code, the container definitions and the
-edge application. Together they reproduce every figure and table in the manuscript.
+Please cite the data deposits together with this repository (release
+`v2.0-tsusc`):
+
+- three-condition campaign (version 2.0.0): https://doi.org/10.5281/zenodo.23007169
+- greenhouse imagery and first campaign (version 1.0.0): https://doi.org/10.5281/zenodo.22857312
+
+## Licence
+
+Code: Apache License 2.0 (`LICENSE`). Data: CC BY 4.0 (see the Zenodo records).

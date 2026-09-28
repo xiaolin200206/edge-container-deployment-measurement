@@ -1,7 +1,7 @@
 #!/bin/sh
 # Regenerate every number, table and figure from the raw run logs, then build
 # the paper and the supplemental material. Run from anywhere:
-#   sh three_condition/manuscript/build.sh
+#   sh manuscript/build.sh
 # Needs: python3 with pandas, numpy, matplotlib; a TeX Live with IEEEtran.
 set -e
 HERE="$(cd "$(dirname "$0")" && pwd)"

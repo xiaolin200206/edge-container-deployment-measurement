@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.0-tsusc (layout) — three-condition study at the repository root
+
+- The three-condition study (runs, run kit, analysis, figures, manuscript) now sits at the
+  repository root, since it is the work this repository accompanies.
+- The first campaign's materials (analysis, data, figures, manuscript, training experiments,
+  edge application) moved to `first_campaign/`; the model file stays at the root. The original
+  layout is preserved at tag `v1.0-caee`.
+- References to a `three_condition/` directory in the entry below refer to what is now the
+  repository root.
+
 ## v2.0-tsusc — three-condition campaign
 
 Adds `three_condition/`: the follow-up measurement that the first campaign's attribution

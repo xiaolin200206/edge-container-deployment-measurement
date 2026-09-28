@@ -5,8 +5,8 @@ Every measured result quoted in the paper's text, tables and abstract is a
 macro defined here, so the text cannot drift from the data. (Design constants
 such as the run length, cooling threshold or t quantiles are written in the
 text.) The first-campaign values are read
-from the repository's earlier analysis (../../analysis/numbers.json, produced
-by analysis/recompute.py from data/profiling_runs). Run after analyse_v2.py.
+from the repository's earlier analysis (first_campaign/analysis/numbers.json,
+produced by first_campaign/analysis/recompute.py). Run after analyse_v2.py.
 """
 from __future__ import annotations
 import json, os
@@ -15,7 +15,7 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 OUT = Path(os.environ.get("OUT_DIR", HERE.parent / "out"))
-FIRST_JSON = Path(os.environ.get("FIRST_JSON", HERE.parent.parent / "analysis" / "numbers.json"))
+FIRST_JSON = Path(os.environ.get("FIRST_JSON", HERE.parent / "first_campaign" / "analysis" / "numbers.json"))
 N = json.loads((OUT / "numbers_v2.json").read_text())
 R, C, E = N["runs"], N["conditions"], N["effects"]
 CN = {"native": "A", "matched": "B", "legacy": "C"}
