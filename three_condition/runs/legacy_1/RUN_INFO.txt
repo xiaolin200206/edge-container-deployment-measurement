@@ -1,0 +1,15 @@
+Condition        : legacy
+Replicate        : 1
+Start            : 2026-09-27 03:56:12.295923 (+0800)
+Duration         : 10801.3 s planned 10800 s
+Duty cycle       : 60 s active / 15 s sleep
+Frames           : 130093
+Camera           : USB V4L2 index 0, 640x480
+Supply telemetry : UPS HAT (E) @ 0x2D, I2C bus 1, 1 Hz
+Throttle source  : sysfs cpufreq+rpi_volt+pwmfan (hw max 2400 MHz)  (1 Hz, identical in all conditions)
+Fan hwmon        : present - fan RPM/PWM logged in power_log.csv
+Power log        : power_log.csv covers active AND sleep phases
+Battery at start : 95% at +30 mA
+Battery at end   : 95% at +18 mA
+Provenance       : provenance.json
+Complete         : yes

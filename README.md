@@ -20,6 +20,13 @@ Telegram alerting layer.
 > comparison. No logged value has been altered; what changed is what is claimed from the logs.
 > **See [`CHANGELOG.md`](CHANGELOG.md) for each correction and the evidence that prompted it.**
 
+> **Three-condition follow-up (v2.0-tsusc).** The attribution question left open by the first
+> campaign is answered in [`three_condition/`](three_condition/): nine runs comparing native
+> execution, a version-matched container and the legacy container, with power logged through the
+> idle phase. Containerisation itself added 1.3 ms (6.7 %) to mean inference latency; the legacy
+> software stack accounted for 87 % of the latency difference and used less energy per inference.
+> Data, run kit, analysis and manuscript sources are in that directory; see its README.
+
 ---
 
 # 1. Disease classification system (manuscript materials)
@@ -34,8 +41,8 @@ overhead."*
 ├── classification.py                 # edge inference + logging + alerting loop
 ├── provenance.py                     # per-run environment manifest  (NEW)
 ├── Dockerfile                        # the image used in the measured runs (historical)
-├── Dockerfile.matched                # condition B: versions pinned to the host  (NEW)
-├── Dockerfile.legacy                 # condition C: the measured image, pinned   (NEW)
+├── three_condition/                  # v2: three-condition campaign (data, run kit,
+│                                     #     analysis, manuscript)  -> see its README
 ├── Mobilenet.ipynb                   # training / ONNX export notebook
 ├── DEPLOYMENT_GUIDE.md               # provisioning SOP for a fresh Raspberry Pi
 ├── new_sd_card_setup.md              # SD-card level setup notes
@@ -148,19 +155,15 @@ is what made the attribution in `CHANGELOG.md` §1 impossible to resolve after t
 
 ## Container definitions
 
-```bash
-docker build -f Dockerfile.matched -t infer:matched .   # condition B
-docker build -f Dockerfile.legacy  -t infer:legacy  .   # condition C
-```
-
-`Dockerfile.matched` pins every dependency to the host's versions so that a container-versus-host
-comparison isolates containerisation. `Dockerfile.legacy` reproduces the measured image with the
-versions stated explicitly. The original unpinned `Dockerfile` is retained unchanged as the
-historical artefact of the runs reported in the manuscript — **do not use it for new measurements.**
+The image definitions used for the three-condition campaign, including the version-matched
+container generated from the host and the reconstructed legacy image, are in
+`three_condition/runner/` together with the fingerprinting script. The original unpinned
+`Dockerfile` is retained unchanged as the historical artefact of the first campaign's runs —
+**do not use it for new measurements.**
 
 ## Citation
 
-If you use this data or code, please cite the archived data deposit (https://doi.org/10.5281/zenodo.22857312)
+If you use this data or code, please cite the archived data deposit (all versions: https://doi.org/10.5281/zenodo.22857310)
 together with this repository (https://github.com/xiaolin200206/edge-container-deployment-measurement). The deposit holds the image dataset and the complete
 deployment telemetry; this repository holds the analysis code, the container definitions and the
 edge application. Together they reproduce every figure and table in the manuscript.

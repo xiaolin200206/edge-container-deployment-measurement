@@ -1,5 +1,30 @@
 # Changelog
 
+## v2.0-tsusc — three-condition campaign
+
+Adds `three_condition/`: the follow-up measurement that the first campaign's attribution
+bound called for, and the sources of the manuscript submitted to IEEE Transactions on
+Sustainable Computing.
+
+- **Design.** Native (A), version-matched container (B) and legacy container (C), three
+  blocks of three three-hour runs, randomised within block. B's image is generated from the
+  host environment; host and B fingerprints agree in Python and glibc versions, the ONNX
+  Runtime build string and the SHA-256 of every compiled numerical extension module.
+- **Instrumentation.** Supply telemetry is now logged at 1 Hz through the sleep phase as well
+  (the first campaign logged only active periods), including the bus-current register
+  `0x12`, battery current, CPU frequency and cap, under-voltage alarm and fan speed, read
+  identically in all conditions.
+- **Result.** Containerisation with the stack held constant: +1.30 ms (+6.7 %) mean latency,
+  +1.9 % CPU time per inference, no resolvable power or temperature change. Legacy stack with
+  the execution mode held constant: +41.5 % mean latency, −6.7 % active power, −16.3 % energy
+  per inference above the idle floor. The first campaign's container-vs-native contrast is
+  reproduced in sign and is mostly a software-stack effect.
+- **Superseded files.** The root `Dockerfile.matched` and `Dockerfile.legacy` (drafts written
+  before the campaign) are removed; the definitions actually used are in
+  `three_condition/runner/`.
+- **Data deposit.** The nine runs are added to the Zenodo record as a new version; cite the
+  all-versions DOI 10.5281/zenodo.22857310.
+
 ## Revision 2 — self-audit pass
 
 Every change below removes or weakens a claim, or reports something that was measured

@@ -1,0 +1,119 @@
+2026-09-27 03:16:07  ================================================================
+2026-09-27 03:16:07  orchestrator start: block 1
+2026-09-27 03:16:08  3 run(s) to go: legacy_1, matched_1, native_1
+2026-09-27 03:16:08  estimated 10.5 h including cooling
+2026-09-27 03:16:08  ----------------------------------------------------------------
+2026-09-27 03:16:08  run 1/9  Block 1  night  legacy_1
+2026-09-27 03:16:08  battery 89% charging at +1241 mA — waiting for it to float (<= +50 mA)
+2026-09-27 03:18:08       still charging: 90% at +1340 mA
+2026-09-27 03:48:10       still charging: 95% at +80 mA
+2026-09-27 03:56:11  battery floating: 95% at +36 mA
+2026-09-27 03:56:11  board at 43.0 C, no cooling needed
+2026-09-27 03:56:11  $ docker run --rm --device /dev/video0 --device /dev/i2c-1 -v /etc/localtime:/etc/localtime:ro -v /home/raspberry/runner/runs:/out infer:legacy python3 profile_run.py --condition legacy --replicate 1 --duration 10800.0 --out /out/legacy_1
+2026-09-27 06:56:13  exited 0 after 3.00 h
+2026-09-27 06:56:13       legacy_1: 130093 frames, 10801 power rows, 2154 in sleep
+2026-09-27 06:56:13  OK legacy_1
+2026-09-27 06:56:13  ----------------------------------------------------------------
+2026-09-27 06:56:13  run 2/9  Block 1  night  matched_1
+2026-09-27 06:56:14  battery 95% at +19 mA, floating
+2026-09-27 06:56:14  board at 54.0 C, waiting for <= 50 C
+2026-09-27 06:57:14  cooled to 46.9 C
+2026-09-27 06:57:14  $ docker run --rm --device /dev/video0 --device /dev/i2c-1 -v /etc/localtime:/etc/localtime:ro -v /home/raspberry/runner/runs:/out infer:matched /venv/bin/python profile_run.py --condition matched --replicate 2 --duration 10800.0 --out /out/matched_1
+2026-09-27 09:57:16  exited 0 after 3.00 h
+2026-09-27 09:57:16       matched_1: 130054 frames, 10801 power rows, 2157 in sleep
+2026-09-27 09:57:16  OK matched_1
+2026-09-27 09:57:16  ----------------------------------------------------------------
+2026-09-27 09:57:16  run 3/9  Block 1  night  native_1
+2026-09-27 09:57:16  battery 95% at +20 mA, floating
+2026-09-27 09:57:16  board at 54.0 C, waiting for <= 50 C
+2026-09-27 09:58:16  cooled to 48.5 C
+2026-09-27 09:58:16  $ /home/raspberry/venv/bin/python /home/raspberry/runner/profile_run.py --condition native --replicate 3 --duration 10800.0 --out /home/raspberry/runner/runs/native_1
+2026-09-27 11:13:21  ================================================================
+2026-09-27 11:13:21  orchestrator start: block 2
+2026-09-27 11:13:21  3 run(s) to go: legacy_2, native_2, matched_2
+2026-09-27 11:13:21  estimated 10.5 h including cooling
+2026-09-27 11:13:21  ----------------------------------------------------------------
+2026-09-27 11:13:21  run 4/9  Block 2  day  legacy_2
+2026-09-27 11:13:21  battery 95% at +19 mA, floating
+2026-09-27 11:13:21  board at 57.3 C, waiting for <= 50 C
+2026-09-27 11:15:21  cooled to 49.6 C
+2026-09-27 11:15:21  camera pinned: dynamic framerate off
+2026-09-27 11:15:21  $ docker run --rm --device /dev/video0 --device /dev/i2c-1 -v /etc/localtime:/etc/localtime:ro -v /home/raspberry/runner/runs:/out infer:legacy python3 profile_run.py --condition legacy --replicate 4 --duration 10800.0 --fps 15.0 --out /out/legacy_2
+2026-09-27 14:15:24  exited 0 after 3.00 h
+2026-09-27 14:15:24       legacy_2: 128865 frames, 10801 power rows, 2156 in sleep
+2026-09-27 14:15:24  OK legacy_2
+2026-09-27 14:15:24  ----------------------------------------------------------------
+2026-09-27 14:15:24  run 5/9  Block 2  day  native_2
+2026-09-27 14:15:24  battery 95% at +17 mA, floating
+2026-09-27 14:15:24  board at 54.0 C, waiting for <= 50 C
+2026-09-27 14:16:24  cooled to 48.0 C
+2026-09-27 14:16:24  camera pinned: dynamic framerate off
+2026-09-27 14:16:24  $ /home/raspberry/venv/bin/python /home/raspberry/runner/profile_run.py --condition native --replicate 5 --duration 10800.0 --fps 15.0 --out /home/raspberry/runner/runs/native_2
+2026-09-27 17:16:26  exited 0 after 3.00 h
+2026-09-27 17:16:26       native_2: 128923 frames, 10801 power rows, 2154 in sleep
+2026-09-27 17:16:26  OK native_2
+2026-09-27 17:16:26  ----------------------------------------------------------------
+2026-09-27 17:16:26  run 6/9  Block 2  day  matched_2
+2026-09-27 17:16:26  battery 95% at +20 mA, floating
+2026-09-27 17:16:26  board at 55.6 C, waiting for <= 50 C
+2026-09-27 17:17:26  cooled to 47.4 C
+2026-09-27 17:17:26  camera pinned: dynamic framerate off
+2026-09-27 17:17:26  $ docker run --rm --device /dev/video0 --device /dev/i2c-1 -v /etc/localtime:/etc/localtime:ro -v /home/raspberry/runner/runs:/out infer:matched /venv/bin/python profile_run.py --condition matched --replicate 6 --duration 10800.0 --fps 15.0 --out /out/matched_2
+2026-09-27 20:17:28  exited 0 after 3.00 h
+2026-09-27 20:17:28       matched_2: 128895 frames, 10801 power rows, 2152 in sleep
+2026-09-27 20:17:28  OK matched_2
+2026-09-27 20:17:28  ================================================================
+2026-09-27 20:17:28  block finished. still outstanding: native_1, matched_3, legacy_3, native_3
+2026-09-27 20:17:28  ================================================================
+2026-09-27 20:17:28  orchestrator start: resume
+2026-09-27 20:17:28  skip legacy_1 (already complete)
+2026-09-27 20:17:28  skip matched_1 (already complete)
+2026-09-27 20:17:28  skip legacy_2 (already complete)
+2026-09-27 20:17:28  skip native_2 (already complete)
+2026-09-27 20:17:28  skip matched_2 (already complete)
+2026-09-27 20:17:28  4 run(s) to go: native_1, matched_3, legacy_3, native_3
+2026-09-27 20:17:28  estimated 14.0 h including cooling
+2026-09-27 20:17:28  ----------------------------------------------------------------
+2026-09-27 20:17:28  run 3/9  Block 1  night  native_1
+2026-09-27 20:17:28  battery 95% at +17 mA, floating
+2026-09-27 20:17:28  board at 57.9 C, waiting for <= 50 C
+2026-09-27 20:19:28  cooled to 49.0 C
+2026-09-27 20:19:28  camera pinned: dynamic framerate off
+2026-09-27 20:19:28  /home/raspberry/runner/runs/native_1 exists and is not empty — removing an incomplete attempt
+2026-09-27 20:19:28  $ /home/raspberry/venv/bin/python /home/raspberry/runner/profile_run.py --condition native --replicate 3 --duration 10800.0 --fps 15.0 --out /home/raspberry/runner/runs/native_1
+2026-09-27 23:19:30  exited 0 after 3.00 h
+2026-09-27 23:19:30       native_1: 128922 frames, 10801 power rows, 2153 in sleep
+2026-09-27 23:19:30  OK native_1
+2026-09-27 23:19:30  ----------------------------------------------------------------
+2026-09-27 23:19:30  run 7/9  Block 3  night  matched_3
+2026-09-27 23:19:30  battery 95% at +16 mA, floating
+2026-09-27 23:19:30  board at 59.5 C, waiting for <= 50 C
+2026-09-27 23:22:30  cooled to 49.0 C
+2026-09-27 23:22:30  camera pinned: dynamic framerate off
+2026-09-27 23:22:30  $ docker run --rm --device /dev/video0 --device /dev/i2c-1 -v /etc/localtime:/etc/localtime:ro -v /home/raspberry/runner/runs:/out infer:matched /venv/bin/python profile_run.py --condition matched --replicate 7 --duration 10800.0 --fps 15.0 --out /out/matched_3
+2026-09-28 02:22:33  exited 0 after 3.00 h
+2026-09-28 02:22:33       matched_3: 128788 frames, 10801 power rows, 2155 in sleep
+2026-09-28 02:22:33  OK matched_3
+2026-09-28 02:22:33  ----------------------------------------------------------------
+2026-09-28 02:22:33  run 8/9  Block 3  night  legacy_3
+2026-09-28 02:22:33  battery 95% at +16 mA, floating
+2026-09-28 02:22:33  board at 52.4 C, waiting for <= 50 C
+2026-09-28 02:23:33  cooled to 45.8 C
+2026-09-28 02:23:33  camera pinned: dynamic framerate off
+2026-09-28 02:23:33  $ docker run --rm --device /dev/video0 --device /dev/i2c-1 -v /etc/localtime:/etc/localtime:ro -v /home/raspberry/runner/runs:/out infer:legacy python3 profile_run.py --condition legacy --replicate 8 --duration 10800.0 --fps 15.0 --out /out/legacy_3
+2026-09-28 05:23:35  exited 0 after 3.00 h
+2026-09-28 05:23:35       legacy_3: 128573 frames, 10801 power rows, 2157 in sleep
+2026-09-28 05:23:35  OK legacy_3
+2026-09-28 05:23:35  ----------------------------------------------------------------
+2026-09-28 05:23:35  run 9/9  Block 3  night  native_3
+2026-09-28 05:23:35  battery 95% at +16 mA, floating
+2026-09-28 05:23:35  board at 53.5 C, waiting for <= 50 C
+2026-09-28 05:24:35  cooled to 48.0 C
+2026-09-28 05:24:36  camera pinned: dynamic framerate off
+2026-09-28 05:24:36  $ /home/raspberry/venv/bin/python /home/raspberry/runner/profile_run.py --condition native --replicate 9 --duration 10800.0 --fps 15.0 --out /home/raspberry/runner/runs/native_3
+2026-09-28 08:24:37  exited 0 after 3.00 h
+2026-09-28 08:24:37       native_3: 128577 frames, 10801 power rows, 2157 in sleep
+2026-09-28 08:24:37  OK native_3
+2026-09-28 08:24:37  ================================================================
+2026-09-28 08:24:37  ALL NINE RUNS COMPLETE
+2026-09-28 08:24:37  now: tar czf profiling_v2.tar.gz runs/   and send it to Claude

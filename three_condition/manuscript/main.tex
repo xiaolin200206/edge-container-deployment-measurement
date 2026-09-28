@@ -1,0 +1,252 @@
+\documentclass[10pt,journal,compsoc]{IEEEtran}
+
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+\usepackage{cite}
+
+\graphicspath{{figures/}}
+\input{numbers_v2.tex}
+
+\hyphenation{Rasp-berry con-tain-er-is-ation con-tain-er-ised}
+
+\begin{document}
+\bstctlcite{IEEEexample:BSTcontrol}
+
+\title{Container Overhead or Stale Dependencies?\\ Decomposing the Latency and Energy Cost of\\ Containerised Inference on an Edge Node}
+
+\author{Lin~Ding~Shan%
+\IEEEcompsocitemizethanks{\IEEEcompsocthanksitem Lin Ding Shan is with the Faculty of Computer Science and Data Science, UCSI University, Cheras 56000, Kuala Lumpur, Malaysia.\protect\\
+E-mail: 1002475487@ucsiuniversity.edu.my}}
+
+\markboth{IEEE Transactions on Sustainable Computing}%
+{Lin: Container Overhead or Stale Dependencies?}
+
+\IEEEtitleabstractindextext{%
+\begin{abstract}
+Comparisons of containerised and native execution on edge devices usually change two things at once: the execution mode, and the software stack that the container image happens to carry. We separate the two on a Raspberry Pi 5 running a duty-cycled convolutional classifier with ONNX Runtime. Three conditions were measured: native execution; a container with the same interpreter and C library versions and byte-identical compiled numerical modules; and a container built from an older base image. Nine three-hour runs in a randomised complete block design recorded per-inference latency, processor load, temperature, fan speed and node input power through both phases of each duty cycle. With the stack held constant, containerisation added \LatMeanBAabs~ms (\LatMeanBApctabs\%) to mean inference latency, \CPUmsBApctabs\% to processor time per inference and at most a few percent to energy per inference. With the execution mode held constant, the older stack added \LatMeanCBpctabs\% to mean latency yet drew \PActCBpctabs\% less active power and used \EIncCBpctabs\% less energy per inference above the idle floor. The idle floor accounted for \EBaseShareLo--\EBaseShareHi\% of the energy per inference over the duty cycle. Most of the apparent container cost belongs to the dependency versions inside the image.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Containers, edge computing, energy efficiency, performance evaluation, deep learning inference, software dependencies, measurement methodology
+\end{IEEEkeywords}}
+
+\maketitle
+\IEEEdisplaynontitleabstractindextext
+\IEEEpeerreviewmaketitle
+
+% =====================================================================
+\IEEEraisesectionheading{\section{Introduction}\label{sec:intro}}
+
+\IEEEPARstart{C}{ontainer} runtimes have become a default way of packaging software for single-board computers at the network edge~\cite{merkel2014docker,pahl2019cloud,shi2016edge}. A container image fixes an application together with its interpreter, libraries and base distribution, which makes deployment repeatable~\cite{boettiger2015introduction}. It also freezes that stack at the moment the image was built. On a device that runs a neural network continuously, the frozen stack includes the inference runtime that executes the model~\cite{chen2019deep}.
+
+This creates a measurement problem that the usual comparison does not address. When a containerised deployment is compared with the same application run natively, the two conditions typically differ in execution mode and in software version at once: the host has been updated and the image has not, or the image was built from whatever base tag was current. Any latency, power or thermal difference is then a joint effect, and attributing it to ``container overhead'' is an assumption rather than a finding. Container-versus-native studies on ARM and IoT hardware have generally reported small overheads~\cite{morabito2016performance,morabito2017virtualization,bellavista2017feasibility,ramalho2016virtualization}. Knoche and Eichelberger, packaging performance experiments in Docker on the Raspberry Pi, found slightly slower runs with higher variance and recommended images because they fix library versions~\cite{knoche2018using}. The same property means that an image can preserve an outdated stack while the host moves on. We are not aware of a study that separates the two effects for neural-network inference and reports what each one costs in energy.
+
+Our own earlier measurements illustrate the problem. In a first campaign on the node studied here (two native and two containerised three-hour runs, released in~\cite{lin2026dataset}), the containerised configuration showed \FirstLatPct\% higher mean inference latency, \FirstCPUpp\ percentage points lower processor utilisation, \FirstPW~W lower input power and a \FirstPeak~$^\circ$C lower cyclic peak temperature. Inspection of the image definition later showed that it fixed Python~3.9 and, because 1.19.2 is the last ONNX Runtime release with a wheel for that interpreter on 64-bit ARM, ONNX Runtime~1.19.2, while the host ran ONNX Runtime~1.29.0 on Python~3.13. That campaign could not say which of the two differences produced the effect, and it recorded no idle power, so it could not report energy per inference against a measured baseline.
+
+This paper answers both questions with a three-condition design (Fig.~\ref{fig:design}). Condition~A runs natively. Condition~B runs in a container with the host's interpreter and C library versions and byte-identical compiled extension modules for every imported numerical package, so $B-A$ isolates the execution mode. Condition~C runs the older image, so $C-B$ isolates the software stack with the execution mode held constant. Nine three-hour runs in a randomised complete block design, with power sampled through both phases of a 60~s/15~s duty cycle, give interval estimates for both effects and an energy account against a measured idle floor.
+
+The contributions are:
+\begin{enumerate}
+\item A measurement design that separates the execution-mode cost of containerisation from the cost of the software stack inside the image, with a fingerprint check that the matched container is matched.
+\item Interval estimates for both effects on latency, processor load, power, energy and temperature for a duty-cycled inference workload on a Raspberry Pi~5. Containerisation itself costs \LatMeanBAabs~ms (\LatMeanBApctabs\%) of mean latency and \CPUmsBApctabs\% of processor time per inference. The older stack accounts for \ShareStack\% of the latency difference between the legacy container and native execution.
+\item An energy account against a measured idle floor. It shows that the current stack, although faster, spends more energy per inference than the older one, and that the floor makes up \EBaseShareLo--\EBaseShareHi\% of the energy per inference over the duty cycle.
+\item The telemetry from all nine runs, the run kit, image definitions, environment fingerprints and the analysis code, which regenerates every number and figure in this paper.
+\end{enumerate}
+
+Section~\ref{sec:related} reviews related work. Section~\ref{sec:method} describes the node, the conditions, the instrumentation and the design. Section~\ref{sec:results} reports the results, and Section~\ref{sec:discussion} discusses what they mean for practice and where they stop.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{fig1_design}
+\caption{Three-condition design. $B-A$ changes only the execution mode; $C-B$ changes only the software stack inside the image. Versions are those recorded by the environment fingerprints (Table~\ref{tab:stacks}).}
+\label{fig:design}
+\end{figure*}
+
+% =====================================================================
+\section{Related Work}\label{sec:related}
+
+\subsection{Container overhead}
+On server hardware, containers have been found to add little CPU overhead relative to native execution, with costs concentrated in I/O and networking paths~\cite{felter2015updated,morabito2015hypervisors}. Studies on ARM single-board computers and IoT devices report a similar picture for CPU-bound work~\cite{morabito2016performance,morabito2017virtualization,ramalho2016virtualization} and have established that Docker-based fog deployments on the Raspberry Pi are feasible~\cite{bellavista2017feasibility}. More recent work compares container engines~\cite{baresi2024qualitative} and contrasts containers with microVMs for edge I/O~\cite{lee2026performance}. Energy has received less attention. Santos et~al.\ measured the energy of workloads run inside and outside Docker on an x86 machine~\cite{santos2018docker}, and Raza et~al.\ compared the performance and energy of container orchestrators on Raspberry Pi gateways~\cite{raza2021empirical}. These studies compare execution environments; none holds the software stack fixed while varying the execution mode for an inference workload. Knoche and Eichelberger used Docker on the Raspberry Pi to make performance experiments replicable, observed a small performance cost and higher variance, and noted that recreating a software environment is hard once particular library versions are no longer available~\cite{knoche2018using}. The present design treats the stack inside the image as a factor in its own right.
+
+\subsection{Inference performance and energy at the edge}
+Characterisations of deep neural network inference on commercial edge devices report latency, throughput and power across devices and frameworks~\cite{hadidi2019characterizing,liang2020ai,baller2021deepedgebench}, and benchmark suites standardise the workloads and run rules~\cite{reddi2020mlperf,banbury2021mlperftiny}. Energy measurement on embedded AI devices has its own metrological difficulties~\cite{apicella2026energy}, and Raspberry Pi power has been modelled against utilisation~\cite{kaup2014powerpi}. Long-running inference on CPU-based edge devices interacts with thermal management~\cite{benoitcattin2020impact}. The case for reporting the energy of machine learning, not only its accuracy, is made in~\cite{schwartz2020green,strubell2019energy,henderson2020towards}, and the observation that idle power dominates lightly loaded systems goes back to the argument for energy-proportional computing~\cite{barroso2007case}. Benchmarks usually report energy while the workload is running. A duty-cycled node also spends energy while it waits, and we report both.
+
+\subsection{Dependency staleness and measurement practice}
+Developers frequently leave library dependencies outdated~\cite{kula2018developers}, and container images on public registries often carry outdated packages with known vulnerabilities and bugs~\cite{zerouali2019relation,shu2017study}. Deep learning frameworks exhibit performance bugs~\cite{makkouk2022empirical}, and framework versions can change model behaviour~\cite{shahriari2022how}. Staleness is therefore a property of real images, not a contrived condition. On method, small changes to the experimental setup can bias performance results~\cite{mytkowicz2009producing}; statistically rigorous comparison requires repeated independent runs and interval estimates~\cite{georges2007statistically,kalibera2013rigorous,hoefler2015scientific}; and repeated measurements within one run are not independent replicates~\cite{hurlbert1984pseudoreplication}. We follow these practices: the replicate is the three-hour run, and inference is made across runs.
+
+% =====================================================================
+\section{Measurement System and Design}\label{sec:method}
+
+\subsection{Node and workload}
+The node is a Raspberry Pi~5 (8~GB, four Cortex-A76 cores, 2.4~GHz maximum) with the official Active Cooler, a temperature-controlled fan. It runs Raspberry Pi OS based on Debian~13 (kernel 6.18.39) with the \texttt{ondemand} frequency governor. Power enters through a Waveshare UPS HAT~(E), which supplies the board from a USB Type-C input and holds a four-cell lithium-ion pack. A USB camera delivers 640$\times$480 frames.
+
+The workload is a three-class MobileNetV2 image classifier~\cite{sandler2018mobilenetv2} built for greenhouse crop monitoring and exported to ONNX. The identical model file (SHA-256 recorded for every run) is executed by ONNX Runtime~\cite{onnxruntime} on the CPU execution provider with default session options. Each frame is resized, centre-cropped to 224$\times$224, converted to RGB and normalised; only the inference call is timed, with the wall clock. The application follows the deployed duty cycle: 60~s of continuous capture and inference, then 15~s in which the process sleeps with the camera open. The loop is camera-bound at 15~frame/s, so the number of inferences per cycle is set by the camera, not by inference speed. Each frame appends one record to a CSV log.
+
+\subsection{Conditions}
+Table~\ref{tab:stacks} lists the three software stacks.
+
+\emph{A (native)} runs the harness directly on the host in a Python virtual environment on the distribution interpreter.
+
+\emph{B (matched container)} runs the same harness in Docker. Its image definition was generated from the host environment by a script that reads the interpreter version and the installed package versions and emits pins. It starts from \texttt{debian:trixie-slim}, installs the distribution's \texttt{python3} package, and installs the same package versions into a virtual environment. A fingerprinting script records the Python and glibc versions, the ONNX Runtime build string, and the SHA-256 of the compiled extension module of each imported numerical package (ONNX Runtime, NumPy, OpenCV, psutil). The host and B fingerprints are identical in every field. The check does not hash the interpreter binary, the C library or the shared libraries bundled with the wheels, so ``matched'' means the same versions of these and byte-identical extension modules, not a byte-identical file system.
+
+\emph{C (legacy container)} runs the harness in an image built from \texttt{python:3.9-slim-bullseye}, reconstructing the first campaign's image. Its ONNX Runtime is ten minor releases older than the host's and is a different build; NumPy, OpenCV, psutil, Python and glibc also differ. Section~\ref{sec:deviations} describes the reconstruction.
+
+The containers receive the camera and the I\textsuperscript{2}C bus as devices and mount the host time zone. No CPU quota was set (cgroup \texttt{cpu.max} was \texttt{max 100000} in every container run), and all four cores were available to every condition. Apart from the deviations in Section~\ref{sec:deviations}, the model, the inference code, the camera settings and the instrumentation were the same in all three.
+
+\begin{table*}[t]
+\centering
+\caption{Software stacks as recorded by the environment fingerprints. A and B agree in every recorded field, including the SHA-256 of each compiled extension module. The legacy ONNX Runtime build string records its compiler flags; the host build string records none.}
+\label{tab:stacks}
+\footnotesize
+\begin{tabular}{llll}
+\toprule
+ & A native & B matched container & C legacy container \\
+\midrule
+Base & host (Debian 13) & \texttt{debian:trixie-slim} & \texttt{python:3.9-slim-bullseye} (Debian 11)\\
+Python & 3.13.5 (Debian package) & 3.13.5 (Debian package) & 3.9.23 (image build) \\
+glibc & 2.41 & 2.41 & 2.31 \\
+ONNX Runtime & 1.29.0 (build 2e2543fbe9) & 1.29.0 (build 2e2543fbe9) & 1.19.2 (build ffceed9d44)\\
+NumPy / OpenCV (headless) & 2.5.2 / 5.0.0.93 & 2.5.2 / 5.0.0.93 & 1.26.4 / 4.10.0.84 \\
+psutil / smbus2 & 7.2.2 / 0.6.1 & 7.2.2 / 0.6.1 & 6.1.0 / 0.5.0 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsection{Instrumentation}
+Three logs are written per run. The per-frame log records inference latency (0.1~ms resolution), system-wide CPU utilisation since the previous frame, memory utilisation, SoC temperature and the latest supply reading. A 1~Hz sampler, running in both phases of the cycle, records the UPS HAT's Type-C bus voltage, current and power; battery voltage, current and charge; SoC temperature and CPU utilisation; the current and capped CPU frequency and the under-voltage alarm; and fan speed and PWM level. The frequency, alarm and fan values are read from sysfs in the same way in all three conditions, so that no condition carries instrumentation load that the others do not. A third log marks cycle transitions. A provenance record captures the kernel, governor, cgroup limits, CPU affinity, library versions and model hash at the start of each run.
+
+The power figure is \emph{node input power}: the power entering the UPS HAT's Type-C input, which covers the board, the fan, the camera and the HAT's own conversion losses. It is not the SoC rail. The HAT reports bus power and bus current in separate registers. Run means of bus current and of power divided by voltage agreed within \PVIDev\% in every run; individual samples scatter more, because the registers update asynchronously. This checks the telemetry's internal consistency, not its absolute accuracy, which the vendor does not specify. Because all conditions are measured with the same instrument and compared as differences within blocks, a constant gain or offset error largely cancels.
+
+The charger remained connected. A run started only once the battery was floating (charge current $\le$50~mA). Over whole runs, the mean battery current was \BatIMeanMin--\BatIMeanMax~mA and never left \BatIMin\ to \BatIMax~mA, so charging diverted at most about \BatWMax~W of bus power on average.
+
+\subsection{Design and protocol}
+The design is a randomised complete block design with three blocks and the three conditions in each, the order within each block drawn at random with a fixed seed. A block is one session of three consecutive runs. Each run lasted three hours (144 duty cycles). The first \WarmupS~s of each run were excluded as warm-up, leaving \CyclesAnalysed\ complete cycles per run for analysis. Before each run the orchestrating script waited for the SoC to cool to 50~$^\circ$C or below and for the battery to float, then started the run and checked its completeness and frame count afterwards.
+
+For the whole campaign, all systemd timers were stopped so that no scheduled job could change the host stack or add load mid-run, and no interactive work was done on the node. The graphical desktop session remained running in all nine runs, at under 1\% CPU. The host stack was not modified between the fingerprinting and the last run.
+
+\subsection{Energy accounting}\label{sec:energy}
+Let $\bar P_{\mathrm{act}}$ and $\bar P_{\mathrm{slp}}$ be the mean node input power over the active and sleep phases, $T_{\mathrm{act}}$ and $T_{\mathrm{slp}}$ the mean phase durations (\TActS~s and \TSlpS~s), and $f$ the inference rate during the active phase. The energy the node spends per inference over the duty cycle is
+\begin{equation}
+E_{\mathrm{cyc}} = \frac{\bar P_{\mathrm{act}}T_{\mathrm{act}}+\bar P_{\mathrm{slp}}T_{\mathrm{slp}}}{f\,T_{\mathrm{act}}}. \label{eq:cyc}
+\end{equation}
+The sleep phase does not reach its floor immediately. The \texttt{ondemand} governor held the maximum frequency for about 5~s after each active phase ended, and the node drew \HoldWlo--\HoldWhi~W more during those seconds than later in the sleep phase. We therefore define the settled floor $P_{\mathrm{floor}}$ as the mean power over sleep-phase samples taken at least \SettleS~s after the phase began, and split $E_{\mathrm{cyc}}$ into a baseline and a workload increment:
+\begin{align}
+E_{\mathrm{base}} &= \frac{P_{\mathrm{floor}}\,(T_{\mathrm{act}}+T_{\mathrm{slp}})}{f\,T_{\mathrm{act}}}, \label{eq:base}\\
+E_{\mathrm{inc}} &= E_{\mathrm{cyc}} - E_{\mathrm{base}}. \label{eq:inc}
+\end{align}
+$E_{\mathrm{base}}$ is what the node would spend per inference if it drew only its floor for the whole cycle; $E_{\mathrm{inc}}$ is the energy above that floor, including the governor's hold after each active phase. The floor is not a hardware idle state. The process stays resident with the camera open and the desktop running, so $P_{\mathrm{floor}}$ is the node's floor under this software configuration, not the hardware's minimum.
+
+\subsection{Statistical analysis}
+The unit of replication is the run. For each quantity, a run-level value is computed over the post-warm-up period. An effect such as $B-A$ is estimated as the mean of the three within-block differences, with a 95\% confidence interval from the $t$ distribution with two degrees of freedom. With three blocks the intervals are wide, and we report them rather than $p$-values, together with the sign of the difference in each block. Percentages are relative to the reference condition of each contrast (A for $B-A$, B for $C-B$). Mean latency and energy per inference above the floor and over the cycle are the quantities of primary interest; the others are reported for completeness, and their intervals are not adjusted for multiplicity.
+
+\subsection{Deviations from protocol}\label{sec:deviations}
+Four events are reported so that readers can judge them.
+
+\emph{Camera frame rate.} The camera's default exposure mode lowers its frame rate in low light. The first two runs (\texttt{legacy\_1} and \texttt{matched\_1}) ran in a dark room and held 15.0~frame/s in every hour. In the next run, the original \texttt{native\_1}, the operator saw the frame rate rise when the room lights came on; the run was stopped and its partial logs were not kept. From the following run (\texttt{legacy\_2}) onward, dynamic frame rate was disabled on the host before every run, 15~frame/s was requested explicitly, and the camera controls were saved with each run.
+
+\emph{Harness update and image rebuild.} To request the frame rate, the harness was updated after the second run; the change also added a measured-rate line to the run summary and did not touch the preprocessing, the timed inference call or the per-frame logging (the earlier version of the harness was not retained). Both images were rebuilt to include the new harness. The harness is copied in the images' final layer, after the layers that install the software stack, so unless the build cache is bypassed a rebuild reuses the stack layers. The binary fingerprints were taken before the first run and were not repeated after the rebuild, but the per-run provenance records show the same interpreter, C library, ONNX Runtime, NumPy and OpenCV versions in every run of each condition. Within block~1, B ran with the camera unpinned at \FPSEarlyMax~frame/s and A with the camera pinned.
+
+\emph{Block~1 timing.} The replacement \texttt{native\_1} ran in the evening of the same day (20:19--23:19 local time), after block~2, and was not contiguous with the other block~1 runs. Section~\ref{sec:sens} repeats the analysis without block~1.
+
+\emph{Legacy image reconstruction.} The first campaign's image no longer existed, so condition~C was rebuilt from its definition. That definition did not pin package versions. The base image fixes Python~3.9, and ONNX Runtime~1.19.2 is the only release that fits it, being the last with a wheel for that interpreter on 64-bit ARM. The other packages were pinned to the versions in Table~\ref{tab:stacks}; it cannot be shown that the original build resolved the same versions. One system package in the definition (\texttt{libglib2.0-0}) is no longer available from the base distribution's archive and was omitted; the headless OpenCV build does not require it. Condition~C therefore reproduces the first campaign's Python minor version and runtime, but it is not a copy of that image.
+
+Run start times, per-run tables and fingerprints are given in the supplemental material.
+
+% =====================================================================
+\section{Results}\label{sec:results}
+
+\subsection{Run integrity}
+All nine runs completed, each with \TotFramesMin--\TotFramesMax\ inferences (\FramesAll\ in total). The inference rate was \FPSPinnedMin--\FPSPinnedMax~frame/s in the seven runs with the camera pinned and \FPSEarlyMin~frame/s in the two early runs. No 1~Hz sample showed a CPU frequency cap below 2400~MHz (\CapSamples\ samples) or an under-voltage alarm (\UVSamples\ samples), and the mean active-phase frequency was at least \MHzMin~MHz in every run. The highest SoC temperature recorded in any run was \TMaxAll~$^\circ$C. Every run used the same model file. Table~\ref{tab:results} gives the condition means and both contrasts; Fig.~\ref{fig:decomp} shows the contrasts as percentages.
+
+\input{table_results.tex}
+
+\subsection{Latency}
+Mean inference latency was \LatMeanA, \LatMeanB\ and \LatMeanC~ms in A, B and C. The containerisation effect $B-A$ was \LatMeanBAabs~ms (\LatMeanBApctabs\%, 95\% CI \LatMeanBAlo\ to \LatMeanBAhi~ms) and positive in all three blocks. The stack effect $C-B$ was \LatMeanCBabs~ms (\LatMeanCBpctabs\%, CI \LatMeanCBlo\ to \LatMeanCBhi~ms), also positive in every block. Of the total difference between the legacy container and native execution, $C-A=\LatMeanCAabs$~ms, the execution mode accounts for \ShareContainer\% and the stack for \ShareStack\%.
+
+The distributions (Fig.~\ref{fig:latency}) show that the two effects differ in kind. A and B share the same fast mode: their per-run first percentiles were \PoneAlo--\PoneAhi\ and \PoneBlo--\PoneBhi~ms, and their fastest inferences \LatMinA\ and \LatMinB~ms. What differs is how often an inference falls in that mode: \FastAlo--\FastAhi\% of inferences took under \FastMs~ms in the native runs against \FastBlo--\FastBhi\% in the matched-container runs. Containerisation did not slow the fastest inferences; it made fast inferences less frequent. The legacy stack shifted the whole distribution: its first percentile was \PoneClo--\PoneChi~ms and its fastest inference \LatMinC~ms. At the tail, $B-A$ was not resolved (p95 \LatPninetyfiveBA~ms, CI \LatPninetyfiveBAlo\ to \LatPninetyfiveBAhi; p99 \LatPninetynineBA~ms, CI \LatPninetynineBAlo\ to \LatPninetynineBAhi), whereas $C-B$ was \LatPninetyfiveCBabs~ms at p95 (\LatPninetyfiveCBpctabs\%) and \LatPninetynineCBabs~ms at p99.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig2_latency}
+\caption{Empirical distribution of per-inference latency, pooled over the three runs of each condition after warm-up. Markers show the pooled median and 95th percentile; B's markers are drawn hollow because they coincide with A's.}
+\label{fig:latency}
+\end{figure}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{fig3_decomposition}
+\caption{The two contrasts as percentages of the reference condition, with 95\% confidence intervals from three within-block differences ($t$, 2 d.f.). Filled markers: interval excludes zero. CPU time per inference is system-wide CPU utilisation $\times$ four cores / inference rate.}
+\label{fig:decomp}
+\end{figure*}
+
+\subsection{Processor load, power and energy}
+Containerisation raised processor load slightly. System-wide CPU utilisation was \CPUBAabs\ percentage points higher in B than in A, positive in all three blocks but with an interval that includes zero (\CPUBAlo\ to \CPUBAhi). Expressed as CPU time per inference (utilisation $\times$ four cores / inference rate), which removes the small frame-rate differences between runs, the effect was \CPUmsBAabs~ms (\CPUmsBApctabs\%, CI \CPUmsBAlo\ to \CPUmsBAhi~ms). Power did not change detectably: $B-A$ was \PActBA~W in the active phase (CI \PActBAlo\ to \PActBAhi) and \PSlpBA~W in the sleep phase. Energy per inference above the floor was \EIncBA~mJ (\EIncBApct\%, CI \EIncBApctlo\% to \EIncBApcthi\%), and over the cycle \ECycBA~mJ (\ECycBApct\%, CI \ECycBApctlo\% to \ECycBApcthi\%). Effects on cycle energy of more than a few percent are therefore excluded; smaller ones are not.
+
+The stack effect runs against the latency result. With the older stack, CPU utilisation was \CPUCBabs\ percentage points lower (\CPUCBpct\%, CI \CPUCBlo\ to \CPUCBhi) and CPU time per inference \CPUmsCBabs~ms lower (\CPUmsCBpct\%). Active-phase power was \PActCBabs~W lower (\PActCBpct\%, CI \PActCBlo\ to \PActCBhi~W), while the settled floor did not differ detectably (\PFloorCB~W). Energy per inference above the floor, Eq.~\eqref{eq:inc}, was \EIncCBabs~mJ lower (\EIncCBpct\%, CI \EIncCBlo\ to \EIncCBhi~mJ, negative in every block), and energy per inference over the cycle, Eq.~\eqref{eq:cyc}, was \ECycCBabs~mJ lower (\ECycCBpct\%, CI \ECycCBlo\ to \ECycCBhi~mJ). Relative to the legacy stack, then, the current stack takes \StackTimeSavedPct\% less time per inference call and spends \StackIncExtraPct\% more energy above the floor on each inference. It also uses about \CPUmsCBabsInt~ms more CPU time per inference while finishing the timed call about \LatMeanCBabsOne~ms sooner, which is consistent with more cores being busy during each call. This CPU time covers the whole process and the system, not only the inference call.
+
+Part of the power difference is the fan. The fan draws from the same supply, and in blocks 1 and 3 the legacy run's fan was slower than the matched run's, by \FanCBblkOneabs\ and \FanCBblkThreeabs~rpm. In block~2, however, where the legacy fan ran \FanCBblkTwoabs~rpm faster, active power was still \PActCBblkTwoabs~W lower, so the power difference is not explained by the fan alone.
+
+Fig.~\ref{fig:energy} splits energy per inference over the cycle into the baseline, Eq.~\eqref{eq:base}, and the increment. The baseline was \EBaseA, \EBaseB\ and \EBaseC~mJ in A, B and C, or \EBaseShareA, \EBaseShareB\ and \EBaseShareC\% of the total. The resolved part of the stack effect lies in the increment, which carries \IncShareOfStackEnergy\% of the $C-B$ difference in cycle energy.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig4_energy}
+\caption{Energy per inference over one 60~s/15~s duty cycle, Eq.~\eqref{eq:cyc}. Grey: baseline at the settled sleep-phase floor, Eq.~\eqref{eq:base}; colour: increment above the floor, Eq.~\eqref{eq:inc}; markers: individual runs. Totals are condition means.}
+\label{fig:energy}
+\end{figure}
+
+\subsection{Temperature and fan}
+Mean cyclic peak SoC temperature was \TPeakA, \TPeakB\ and \TPeakC~$^\circ$C (Fig.~\ref{fig:thermal}). Neither contrast was resolved. $B-A$ was \TPeakBA~$^\circ$C (CI \TPeakBAlo\ to \TPeakBAhi). $C-B$ was \TPeakCB~$^\circ$C (CI \TPeakCBlo\ to \TPeakCBhi); it was negative in all three blocks but ranged from \TPeakCBblkmin\ to \TPeakCBblkmax~$^\circ$C. Active-phase fan speed moved the same way on average ($C-B$ \FanCB~rpm, CI \FanCBlo\ to \FanCBhi). The fan controller regulates temperature, so part of any difference in heat output appears as fan speed rather than as temperature, and the two readings must be read together. In block~2 the legacy run's fan ran slightly faster than the matched run's, and its peak temperature was within \TPeakCBblkTwoabs~$^\circ$C of it.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig5_thermal}
+\caption{Mean cyclic peak SoC temperature (left) and mean active-phase fan speed (right) for each run, by block. The Active Cooler's fan is temperature-controlled, so the two panels are coupled.}
+\label{fig:thermal}
+\end{figure}
+
+\subsection{Sensitivity and relation to the first campaign}\label{sec:sens}
+Excluding block~1, whose native run was repeated later and whose matched run had the camera unpinned, leaves two blocks. The point estimates change little: $B-A$ latency \LatMeanBAsens~ms and $C-B$ latency \LatMeanCBsens~ms (\LatMeanBA\ and \LatMeanCB~ms with all blocks); $C-B$ energy per inference above the floor \EIncCBsens~mJ (\EIncCB). With two blocks the intervals use $t_{0.975,1}=12.7$ and widen sharply: the $B-A$ latency interval then includes zero (\LatMeanBAsenslo\ to \LatMeanBAsenshi~ms), while the $C-B$ intervals for latency (\LatMeanCBsenslo\ to \LatMeanCBsenshi~ms) and energy above the floor (\EIncCBsenslo\ to \EIncCBsenshi~mJ) still exclude it. One estimate sharpens. In blocks 2 and 3, $B-A$ energy above the floor was \EIncBAsens~mJ (\EIncBAsenspct\%), and its two-block interval (\EIncBAsenslo\ to \EIncBAsenshi~mJ) excludes zero. Block~1 is the only block with a negative $B-A$ difference in this quantity (\EIncBAblkOne~mJ), and it is the block in which B ran with the camera unpinned at a slightly higher frame rate. Containerisation therefore probably costs a small amount of workload energy, of the order of 2\% of the energy above the floor, or \ECycBAsenspct\% of the energy per inference over the cycle.
+
+The first campaign~\cite{lin2026dataset} used an older harness with a lower frame rate, two runs per condition and no idle measurement, so its values are not pooled with these. Its contrast corresponds to $C-A$ here, and every sign reproduces: mean latency +\LatMeanCApctabs\% (first campaign +\FirstLatPct\%), CPU utilisation \CPUCAabs\ percentage points lower (\FirstCPUpp), active power \PActCAabs~W lower (\FirstPW~W) and cyclic peak temperature \TPeakCAabs~$^\circ$C lower (\FirstPeak~$^\circ$C). The difference is in interpretation: the present design shows that most of that contrast comes from the stack in the image, not from running in a container.
+
+% =====================================================================
+\section{Discussion}\label{sec:discussion}
+
+\subsection{What a container-versus-native figure measures}
+Unless the stacks are verified equal, a comparison between a containerised deployment and native execution measures two things. On this node, the execution-mode component is small: \LatMeanBAabs~ms of mean latency, \CPUmsBApctabs\% of CPU time per inference, no detectable change in power or temperature, and probably about 2\% of the energy above the floor. The software-stack component is about \StackToContainerRatio\ times larger in latency and determines the energy result. A study that reports the joint figure as container overhead will overstate it; one that happened to package a newer stack than the host's could understate it or reverse its sign. The practical requirement is cheap. Record the interpreter, the C library, and the versions and hashes of the numerical binaries in each condition, and either match them or report the mismatch as a factor. The fingerprinting and Dockerfile-generation scripts released with this paper do this in seconds; hashing the interpreter, the C library and the bundled shared libraries as well would make the check stricter.
+
+The containerisation effect that remains is informative. It did not raise the latency floor, which is inconsistent with a constant cost added to every call. Instead, it lowered the frequency of the fast mode. A change in how often the fast path is taken is more consistent with an interaction with scheduling, core placement or cache state than with added instructions on every call. The present measurements cannot identify it. Hardware performance counters and scheduler tracing, which we did not collect so as to keep the instrumentation light and identical in all conditions, are the tools for that question.
+
+\subsection{A faster stack is not a cheaper one}
+The current stack finished each inference call in \StackTimeSavedPct\% less time than the older one and spent more energy doing so. The loop is camera-bound, so finishing sooner does not produce more inferences; it only lengthens the wait before the next frame. Whether a faster inference saves energy then depends on how much power is drawn while it runs and whether the cores return to a low-power state between frames. Here the current stack drew more power during the active phase than its shorter calls could repay, consistent with its higher CPU time per inference. Updating the software stack to reduce latency can therefore increase the energy of a rate-limited edge node. Conversely, a stale image can look more energy-efficient than a current one for reasons that have nothing to do with containerisation. Energy comparisons across deployment configurations should state the runtime and library versions and, for rate-limited loops, report energy per inference and not latency alone. The $C-B$ contrast changes the whole stack, so the present data do not say which component is responsible. Runtime session options, such as the number of intra-operator threads and whether idle worker threads spin, are candidates that a follow-up study can vary directly, alongside the library versions.
+
+\subsection{The idle floor dominates}
+On this node, \EBaseShareLo--\EBaseShareHi\% of the energy per inference over the duty cycle is accounted for by the settled sleep-phase floor drawn over the whole cycle, and that share hardly depended on the condition. The largest effect on energy per inference over the cycle, the stack effect, was \ECycCBpctabs\%. For sustainability, the software stack matters, but the platform's floor matters more: the desktop session, the open camera, the fan and the conversion losses of the supply board contribute to it. Reducing that floor, for example by running headless, releasing the camera during the wait, or entering a deeper idle state, is a larger lever than any choice among the three conditions studied here, although we did not measure these alternatives. The governor's hold at maximum frequency after each active phase cost about \HoldmJ~mJ per inference, small by comparison. This is the energy-proportionality argument~\cite{barroso2007case} at the scale of a single edge node. It also means that energy figures reported without the idle phase describe only the smaller part of what a duty-cycled node consumes.
+
+\subsection{Thermal effects under active cooling}
+With a temperature-controlled fan, a difference in heat output shows up partly as a temperature difference and partly as a fan-speed difference. The older stack's lower power was accompanied by lower cyclic peaks and a slower fan in blocks 1 and 3, and by a slightly faster fan with almost no temperature difference in block~2. The within-block order also matters here. In blocks 1 and 3 the legacy runs fell in the pre-dawn hours, which are usually the coolest, whereas in block~2 the legacy run was at midday. Ambient temperature was not logged, so an ambient contribution to the thermal and fan differences in blocks 1 and 3 cannot be excluded. For thermal comparisons on actively cooled boards, temperature alone can hide a real difference in heat, and the fan's state and the ambient temperature should be logged alongside it.
+
+\subsection{Limitations}
+The results come from one board, one model, one pair of software stacks and one duty cycle, and they should be read as a controlled case study, not as general constants. Three blocks give wide intervals: the $B-A$ energy and thermal contrasts are consistent with zero over all blocks, and the small $B-A$ energy effect suggested by blocks 2 and 3 rests on two blocks. The $C-B$ contrast bundles the whole stack; the inference call is the timed region, which points towards the runtime, but Python, NumPy, OpenCV and glibc also changed and were not varied separately. ONNX Runtime thread counts and spinning behaviour were left at their defaults and not recorded at run time. Power is node input power sampled at 1~Hz from a module with unspecified absolute accuracy; differences between conditions are more trustworthy than absolute values, and the fan's share of the power difference was not measured separately. Ambient temperature was not logged; the blocks remove variation between sessions, not within them. The floor is not a hardware idle state, and the governor was \texttt{ondemand} throughout; a different governor or a deeper idle state would change the baseline and possibly the stack effect. Block~1 was not contiguous and ran B with the camera unpinned. The images were rebuilt once during the campaign, and the legacy image was reconstructed from its definition rather than reused.
+
+% =====================================================================
+\section{Conclusion}\label{sec:conclusion}
+We separated the cost of running an edge inference workload in a container from the cost of the software stack that the container carried. With the interpreter, C library and numerical extension modules held the same, containerisation added \LatMeanBAabs~ms (\LatMeanBApctabs\%) to mean inference latency and \CPUmsBApctabs\% to CPU time per inference, no resolvable change in power or temperature, and probably about 2\% to the energy above the idle floor. The older stack found in a real image accounted for \ShareStack\% of the latency difference, and it was the less energy-hungry configuration: \EIncCBpctabs\% less energy per inference above the idle floor and \ECycCBpctabs\% less over the duty cycle, with lower active power in every block. The idle floor made up \EBaseShareLo--\EBaseShareHi\% of the energy per inference. Container-versus-native comparisons at the edge should therefore verify and report the software stack in each condition, and energy studies of duty-cycled nodes should measure the idle phase. Future work will use hardware performance counters and scheduler tracing to explain the change in the fast-mode frequency under containerisation, and will vary runtime threading options and library versions separately to locate the energy difference between the stacks.
+
+% =====================================================================
+\section*{Data and Code Availability}
+The per-frame, 1~Hz and cycle-event logs of all nine runs, with their provenance records, camera settings, environment fingerprints and orchestration log, are deposited at Zenodo~\cite{lin2026dataset} together with the first campaign's telemetry. The run kit (harness, orchestrator, image definitions and fingerprinting script) and the analysis and figure scripts, which regenerate every number, table and figure in this paper from the raw logs, are in the \texttt{three\_condition} directory of \url{https://github.com/xiaolin200206/edge-container-deployment-measurement} (release \texttt{v2.0-tsusc}).
+
+\section*{Acknowledgment}
+The author used Claude (Anthropic), a generative AI system, throughout this work: to help design the three-condition protocol; to write the measurement harness, orchestration, fingerprinting, analysis and figure scripts; to draft and edit the text of all sections; and to check reference metadata. The author built and operated the hardware, ran all measurements, reviewed all code, text and results, and takes responsibility for the entire content. All numbers in the paper are generated by the released scripts from the raw logs.
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\end{document}

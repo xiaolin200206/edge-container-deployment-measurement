@@ -1,4 +1,8 @@
 # Condition C — the ORIGINAL container, now made reproducible.
+#
+# NOTE: the original image itself is gone (the SD card was reimaged), so this is
+# a RECONSTRUCTION of it from the determined pins, not the artefact that ran in
+# the first round. The manuscript must say so.
 # Identical to the image used in the measured runs, except that the versions
 # pip resolved at build time are written down explicitly.
 #
@@ -16,8 +20,13 @@
 # 2026-08-17 — eighteen releases and roughly 23 months later.
 FROM python:3.9-slim-bullseye
 
+# libglib2.0-0 is in the original Dockerfile but is NOT installed here: Debian
+# 11 reached end of life and that package has been removed from
+# bullseye-security, so the build 404s. opencv-python-headless is built for
+# environments without a GUI stack and does not need it; the rehearsal run
+# verifies `import cv2` still works. This is the one respect in which the
+# reconstruction departs from the original image, and the manuscript says so.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        libglib2.0-0 \
         procps \
     && rm -rf /var/lib/apt/lists/*
 
@@ -30,5 +39,5 @@ RUN pip install --no-cache-dir \
         smbus2==0.5.0
 
 WORKDIR /app
-COPY classification.py provenance.py basil_mobilenet.onnx ./
-CMD ["python3", "classification.py"]
+COPY profile_run.py provenance.py basil_mobilenet.onnx ./
+CMD ["python3", "profile_run.py", "--condition", "legacy"]
