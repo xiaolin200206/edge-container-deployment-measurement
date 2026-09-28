@@ -104,5 +104,6 @@ it from the repository root into `runner/` before building.
 
 ## Citation
 
-Please cite the data deposit (all versions): https://doi.org/10.5281/zenodo.22857310
-together with this repository.
+Please cite the data deposit for these runs (version 2.0.0): https://doi.org/10.5281/zenodo.23007169
+together with this repository. The first campaign's data and the greenhouse imagery are in
+version 1.0.0: https://doi.org/10.5281/zenodo.22857312

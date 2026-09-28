@@ -22,8 +22,9 @@ Sustainable Computing.
 - **Superseded files.** The root `Dockerfile.matched` and `Dockerfile.legacy` (drafts written
   before the campaign) are removed; the definitions actually used are in
   `three_condition/runner/`.
-- **Data deposit.** The nine runs are added to the Zenodo record as a new version; cite the
-  all-versions DOI 10.5281/zenodo.22857310.
+- **Data deposit.** The nine runs are deposited as version 2.0.0 of the Zenodo record
+  (10.5281/zenodo.23007169); the imagery and the first campaign's telemetry remain in
+  version 1.0.0 (10.5281/zenodo.22857312).
 
 ## Revision 2 — self-audit pass
 

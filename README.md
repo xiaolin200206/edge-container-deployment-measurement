@@ -163,7 +163,7 @@ container generated from the host and the reconstructed legacy image, are in
 
 ## Citation
 
-If you use this data or code, please cite the archived data deposit (all versions: https://doi.org/10.5281/zenodo.22857310)
+If you use this data or code, please cite the archived data deposit (imagery and first campaign, version 1.0.0: https://doi.org/10.5281/zenodo.22857312; three-condition campaign, version 2.0.0: https://doi.org/10.5281/zenodo.23007169)
 together with this repository (https://github.com/xiaolin200206/edge-container-deployment-measurement). The deposit holds the image dataset and the complete
 deployment telemetry; this repository holds the analysis code, the container definitions and the
 edge application. Together they reproduce every figure and table in the manuscript.

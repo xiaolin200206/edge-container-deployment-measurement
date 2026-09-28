@@ -69,11 +69,11 @@ H.~Knoche and H.~Eichelberger, ``Using the {R}aspberry {P}i and {D}ocker for
   replicable performance experiments: Experience paper,'' in \emph{Proc.
   ACM/SPEC Int. Conf. Performance Engineering (ICPE)}, 2018, pp. 305--316.
 
-\bibitem{lin2026dataset}
+\bibitem{lin2026datasetv1}
 \BIBentryALTinterwordspacing
 D.~S. Lin, ``Greenhouse imagery and deployment telemetry for a containerised
-  edge vision node on a {R}aspberry {P}i 5,'' Zenodo dataset, all versions,
-  2026. [Online]. Available: \url{https://doi.org/10.5281/zenodo.22857310}
+  edge vision node on a {R}aspberry {P}i 5 (version 1.0.0),'' Zenodo dataset,
+  2026. [Online]. Available: \url{https://doi.org/10.5281/zenodo.22857312}
 \BIBentrySTDinterwordspacing
 
 \bibitem{felter2015updated}
@@ -238,5 +238,12 @@ M.~Sandler, A.~Howard, M.~Zhu, A.~Zhmoginov, and L.-C. Chen, ``{MobileNetV2}:
 {ONNX Runtime developers}, ``{ONNX Runtime},'' \url{https://onnxruntime.ai},
   2018, source code: \url{https://github.com/microsoft/onnxruntime}; MIT
   License; first released 2018-11-29.
+
+\bibitem{lin2026datasetv2}
+\BIBentryALTinterwordspacing
+D.~S. Lin, ``Greenhouse imagery and deployment telemetry for a containerised
+  edge vision node on a {R}aspberry {P}i 5 (version 2.0.0),'' Zenodo dataset,
+  2026. [Online]. Available: \url{https://doi.org/10.5281/zenodo.23007169}
+\BIBentrySTDinterwordspacing
 
 \end{thebibliography}
