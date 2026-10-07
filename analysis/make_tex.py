@@ -141,6 +141,15 @@ m("PVIDev", f(max(abs(R[l]["bus_i_vs_p_over_v_pct"]) for l in R), 1))
 m("MHzMin", f(min(R[l]["cpu_mhz_active_mean"] for l in R), 0))
 m("CyclesAnalysed", str(R["native_1"]["cycles_analysed"]))
 m("TMaxAll", f(max(max(R[l]["temp_c_max_whole_1hz"], R[l]["temp_c_max_whole_frame"]) for l in R), 1))
+# classifier output in every run (post-warm-up frames)
+_cls = sorted({c for l in R for c in R[l]["pred_classes"]})
+m("PredClassesAll", ", ".join(_cls).replace("_", "\\_"))
+m("PredTopPctMin", f(min(R[l]["pred_top_class_pct"] for l in R), 1))
+m("PredConfMin", f(min(R[l]["confidence_mean"] for l in R), 3))
+m("PredConfMax", f(max(R[l]["confidence_mean"] for l in R), 3))
+# the run ends during the sleep phase of the last analysed cycle; the number of
+# full sleep phases entering T_slp is one fewer than the analysed active phases
+m("SleepPhasesAnalysed", str(R["native_1"]["cycles_analysed"] - 1))
 
 # ------------------------------------------------------------ sensitivity: blocks 2 and 3
 T975_DF1 = 12.706204736174705
@@ -185,15 +194,15 @@ ROWS2 = [("fps", "Inference rate (frame/s)", 2),
          ("latency_ms_median", "Latency, median (ms)", 2),
          ("latency_ms_p95", "Latency, p95 (ms)", 2),
          ("latency_ms_p99", "Latency, p99 (ms)", 2),
-         ("cpu_pct_frame_mean", "CPU utilisation, system (\\%)", 1),
+         ("cpu_pct_frame_mean", "CPU utilisation (\\%)", 1),
          ("cpu_ms_per_inference", "CPU time per inference (ms)", 1),
          ("power_w_active", "Power, active phase (W)", 2),
          ("power_w_sleep", "Power, sleep phase (W)", 2),
          ("power_w_sleep_floor", "Power, settled floor (W)", 2),
-         ("energy_per_inference_above_floor_mJ", "Energy/inference above floor (mJ)", 1),
-         ("energy_per_inference_cycle_mJ", "Energy/inference, cycle (mJ)", 1),
-         ("cyclic_peak_c_mean", "Cyclic peak temperature ($^\\circ$C)", 1),
-         ("fan_rpm_mean_active", "Fan speed, active phase (rpm)", 0)]
+         ("energy_per_inference_above_floor_mJ", "Energy/inf., above floor (mJ)", 1),
+         ("energy_per_inference_cycle_mJ", "Energy/inf., cycle (mJ)", 1),
+         ("cyclic_peak_c_mean", "Cyclic peak temp. ($^\\circ$C)", 1),
+         ("fan_rpm_mean_active", "Fan, active phase (rpm)", 0)]
 
 
 def cell(mu, sd, d):
@@ -209,23 +218,28 @@ def eff(e, d):
     return (f"{sgn(e['mean'], d)}{dag}", f"[{f(e['ci95'][0], d)}, {f(e['ci95'][1], d)}]", signs(e))
 
 
-t = [r"\begin{table*}[t]", r"\centering",
-     r"\caption{Condition means ($\pm$ SD over three runs) and within-block effects with 95\% confidence intervals ($t$, 2 d.f.). "
-     r"$^{\dagger}$: interval includes zero. Signs: direction of the difference in blocks 1, 2 and 3. "
+t = [r"\begin{table}[!t]", r"\centering",
+     r"\caption{(a) Condition means ($\pm$ SD over three runs). (b) Within-block effects with 95\% confidence intervals ($t$, 2 d.f.); "
+     r"$^{\dagger}$: interval includes zero; signs: direction of the difference in blocks 1, 2 and 3 (0: no difference at the printed precision). "
      r"CPU utilisation is system-wide, sampled per frame in the active phase. The settled floor is the sleep-phase power after the governor has stepped down; "
      r"energy per inference above the floor and over the whole duty cycle are defined in Section~\ref{sec:energy}.}",
-     r"\label{tab:results}", r"\setlength{\tabcolsep}{3.5pt}", r"\scriptsize",
-     r"\begin{tabular}{lccc ccc ccc}", r"\toprule",
-     r" & \multicolumn{3}{c}{Condition mean $\pm$ SD} & \multicolumn{3}{c}{$B-A$ (execution mode)} & \multicolumn{3}{c}{$C-B$ (software stack)}\\",
-     r"\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}",
-     r"Quantity & A native & B matched & C legacy & effect & 95\% CI & signs & effect & 95\% CI & signs\\", r"\midrule"]
+     r"\label{tab:results}", r"\setlength{\tabcolsep}{3.2pt}", r"\footnotesize",
+     r"\begin{tabular}{lccc}", r"\toprule",
+     r"(a) Quantity & A native & B matched & C legacy\\", r"\midrule"]
 for key, lab, d in ROWS2:
     a, b, c = (C[x][key] for x in ("native", "matched", "legacy"))
+    t.append(f"{lab} & {cell(a['mean'], a['sd'], d)} & {cell(b['mean'], b['sd'], d)} & "
+             f"{cell(c['mean'], c['sd'], d)}\\\\")
+t += [r"\bottomrule", r"\end{tabular}", r"", r"\bigskip", r"",
+      r"\begin{tabular}{lccc ccc}", r"\toprule",
+      r" & \multicolumn{3}{c}{$B-A$ (execution mode)} & \multicolumn{3}{c}{$C-B$ (software stack)}\\",
+      r"\cmidrule(lr){2-4}\cmidrule(lr){5-7}",
+      r"(b) Quantity & effect & 95\% CI & signs & effect & 95\% CI & signs\\", r"\midrule"]
+for key, lab, d in ROWS2:
     e1, i1, s1 = eff(E[key]["B_minus_A"], d)
     e2, i2, s2 = eff(E[key]["C_minus_B"], d)
-    t.append(f"{lab} & {cell(a['mean'], a['sd'], d)} & {cell(b['mean'], b['sd'], d)} & "
-             f"{cell(c['mean'], c['sd'], d)} & {e1} & {i1} & {s1} & {e2} & {i2} & {s2}\\\\")
-t += [r"\bottomrule", r"\end{tabular}", r"\end{table*}"]
+    t.append(f"{lab} & {e1} & {i1} & {s1} & {e2} & {i2} & {s2}\\\\")
+t += [r"\bottomrule", r"\end{tabular}", r"\end{table}"]
 (OUT / "table_results.tex").write_text("\n".join(t) + "\n")
 print(f"wrote {OUT / 'table_results.tex'}")
 

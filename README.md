@@ -2,9 +2,13 @@
 
 Data, run kit and analysis for
 
-> Lin Ding Shan, "Container Overhead or Stale Dependencies? Decomposing the
-> Latency and Energy Cost of Containerised Inference on an Edge Node"
-> (submitted to *IEEE Transactions on Sustainable Computing*).
+> Lin Ding Shan, "Container overhead or stale dependencies? Decomposing the
+> latency and energy cost of containerised inference on an edge node"
+> (manuscript submitted for publication).
+
+The manuscript itself is not part of this repository. Every number, table and
+figure it reports is generated here from the raw logs (see *Reproducing the
+results*).
 
 Comparisons of containerised and native execution on edge devices usually
 change two things at once: the execution mode and the software stack inside
@@ -51,34 +55,35 @@ inference over the duty cycle.
 │   ├── make_tex.py          # LaTeX macros + Table 2 -> out/
 │   ├── make_supp.py         # supplemental tables -> out/
 │   └── figures_v2.py        # Figs. 1-7 -> figures/
-├── out/                     # generated numbers and tables
+├── out/                     # generated numbers (JSON + LaTeX macros) and tables
 ├── figures/                 # generated figures (PDF + PNG)
-├── manuscript/              # paper and supplement sources, build.sh, PDFs
 ├── basil_mobilenet.onnx     # the model used in every run (SHA-256 in provenance.json)
 └── first_campaign/          # the earlier two-condition campaign (see below)
 ```
 
-## Reproducing the paper
+## Reproducing the results
 
-Requirements: Python 3 with `pandas`, `numpy`, `matplotlib`; for the PDFs, a
-TeX Live installation with `IEEEtran`.
-
-```bash
-sh manuscript/build.sh
-```
-
-This runs the four analysis scripts in order and compiles
-`manuscript/main.pdf` and `manuscript/supplement.pdf`. The paper takes every
-measured result from `out/numbers_v2.tex` and `out/table_results.tex`; the
-first-campaign values are read from `first_campaign/analysis/numbers.json`.
-The analysis reads the gzipped per-frame logs directly.
-
-To run the analysis alone:
+Requirements: Python 3 with `pandas`, `numpy` and `matplotlib`.
 
 ```bash
-python3 analysis/analyse_v2.py && python3 analysis/make_tex.py \
-  && python3 analysis/make_supp.py && python3 analysis/figures_v2.py
+sh analysis/build.sh
 ```
+
+This runs the four analysis scripts in order:
+
+```bash
+python3 analysis/analyse_v2.py   # every quantity -> out/numbers_v2.json
+python3 analysis/make_tex.py     # LaTeX macros and tables -> out/
+python3 analysis/make_supp.py    # supplementary tables -> out/supp_tables.tex
+python3 analysis/figures_v2.py   # Figs. 1-7 -> figures/
+```
+
+`out/numbers_v2.tex` defines one LaTeX macro per reported value, and
+`out/table_*.tex` hold the tables; both use only standard LaTeX and can be
+`\input` into any journal template, so the text of a paper cannot drift from
+the data. The first-campaign values are read from
+`first_campaign/analysis/numbers.json`. The analysis reads the gzipped
+per-frame logs directly.
 
 ## Notes on the data
 
@@ -118,12 +123,13 @@ legacy container, two runs each), the greenhouse field log, the classifier
 training experiments and the edge application. Its contrast is reproduced by
 C − A here and decomposed by this study. Commands in `first_campaign/README.md`
 run from inside that directory. The original layout of those materials, as
-first released, is preserved at tag `v1.0-caee`.
+first released, is preserved in the repository's first release (archived as
+Zenodo version 1.0.0).
 
 ## Citation
 
 Please cite the data deposits together with this repository (release
-`v2.0-tsusc`):
+`v2.1`):
 
 - three-condition campaign (version 2.0.0): https://doi.org/10.5281/zenodo.23007169
 - greenhouse imagery and first campaign (version 1.0.0): https://doi.org/10.5281/zenodo.22857312

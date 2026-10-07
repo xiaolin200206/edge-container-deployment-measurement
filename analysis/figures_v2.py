@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Figures for the TSUSC manuscript, from out/numbers_v2.json and the raw runs.
+"""Figures for the manuscript, from out/numbers_v2.json and the raw runs.
 
-Print figures for IEEEtran: single column 3.5 in, double column 7.16 in, 8 pt
+Print sizes: single-column figures 3.5 in, full-width figures 7.16 in, 8 pt
 text. Condition colours are the first three slots of a validated categorical
 palette (all-pairs CVD dE >= 9.2); the third slot is below 3:1 contrast, so
 every condition is also direct-labelled and carries a distinct marker shape.
@@ -42,6 +42,7 @@ SHORT = {"native": "A", "matched": "B", "legacy": "C"}
 ORDER = ["native", "matched", "legacy"]
 
 plt.rcParams.update({
+    "font.family": "DejaVu Sans",
     "font.size": 8, "axes.titlesize": 8, "axes.labelsize": 8,
     "xtick.labelsize": 7.5, "ytick.labelsize": 7.5, "legend.fontsize": 7.5,
     "axes.edgecolor": MUTED, "axes.labelcolor": INK, "text.color": INK,
@@ -75,8 +76,8 @@ def post_warmup(label, cols):
 
 # ------------------------------------------------------------ Fig 1: design
 def fig_design():
-    fig, ax = plt.subplots(figsize=(COL2, 2.15))
-    ax.set_xlim(0, 100); ax.set_ylim(0, 40); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(COL2, 2.45))
+    ax.set_xlim(0, 100); ax.set_ylim(0, 44); ax.axis("off")
 
     def box(x, y, w, h, title, lines, color):
         ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.25,rounding_size=1.2",
@@ -87,14 +88,17 @@ def fig_design():
             ax.text(x + w / 2, y + h - 7.2 - i * 3.6, ln, ha="center", va="top",
                     fontsize=7, color=INK2)
 
-    w, h, y = 26, 22, 14
+    w, h, y = 26, 25.6, 15
     xs = [1, 37, 73]
-    box(xs[0], y, w, h, "A  native", ["host process", "Python 3.13.5 (Debian)",
+    box(xs[0], y, w, h, "A  native", ["host process",
+        "Raspberry Pi OS (Debian 13)", "Python 3.13.5 (Debian)",
         "glibc 2.41", "ONNX Runtime 1.29.0"], CC["native"])
-    box(xs[1], y, w, h, "B  matched container", ["Docker, debian:trixie-slim",
-        "Python 3.13.5 (Debian)", "glibc 2.41", "ONNX Runtime 1.29.0"], CC["matched"])
-    box(xs[2], y, w, h, "C  legacy container", ["Docker, python:3.9-slim",
-        "Python 3.9.23", "glibc 2.31", "ONNX Runtime 1.19.2"], CC["legacy"])
+    box(xs[1], y, w, h, "B  matched container", ["Docker",
+        "debian:trixie-slim", "Python 3.13.5 (Debian)",
+        "glibc 2.41", "ONNX Runtime 1.29.0"], CC["matched"])
+    box(xs[2], y, w, h, "C  legacy container", ["Docker",
+        "python:3.9-slim-bullseye", "Python 3.9.23",
+        "glibc 2.31", "ONNX Runtime 1.19.2"], CC["legacy"])
 
     def arrow(x0, x1, label, sub):
         ax.annotate("", xy=(x1, y + h / 2), xytext=(x0, y + h / 2),
@@ -103,16 +107,16 @@ def fig_design():
                 fontsize=7.5, fontweight="bold", color=INK)
         ax.text((x0 + x1) / 2, y + h / 2 - 2.2, sub, ha="center", va="top",
                 fontsize=6.6, color=INK2)
-    arrow(xs[0] + w + 1.2, xs[1] - 1.2, "B − A", "execution\nmode only")
-    arrow(xs[1] + w + 1.2, xs[2] - 1.2, "C − B", "software\nstack only")
+    arrow(xs[0] + w + 1.2, xs[1] - 1.2, "B \u2212 A", "execution\nmode only")
+    arrow(xs[1] + w + 1.2, xs[2] - 1.2, "C \u2212 B", "software\nstack only")
 
-    ax.text(50, 9.6,
-            "A and B: same interpreter and glibc versions; compiled extension modules of "
+    ax.text(50, 10.2,
+            "A and B: same interpreter and glibc versions; compiled extension modules of\n"
             "onnxruntime, numpy, OpenCV and psutil byte-identical (SHA-256)",
             ha="center", va="center", fontsize=6.8, color=INK2, style="italic")
-    ax.text(50, 3.4,
+    ax.text(50, 3.0,
             "Same board, cooler, camera, model file (SHA-256), inference code and instrumentation in all three\n"
-            "3 blocks × 3 conditions, order randomised within block  ·  3 h per run, 60 s / 15 s duty cycle",
+            "3 blocks \u00d7 3 conditions, order randomised within block  \u00b7  3 h per run, 60 s / 15 s duty cycle",
             ha="center", va="center", fontsize=6.8, color=INK)
     save(fig, "fig1_design")
 
@@ -161,7 +165,7 @@ ROWS = [("latency_ms_mean", "Latency, mean"),
 
 def fig_decomposition():
     E = N["effects"]; C = N["conditions"]
-    fig, axes = plt.subplots(1, 2, figsize=(COL2, 2.35), sharey=True,
+    fig, axes = plt.subplots(1, 2, figsize=(COL2, 2.5), sharey=True,
                              gridspec_kw={"wspace": 0.08})
     for ax, key, title, base in ((axes[0], "B_minus_A", "B − A   containerisation, stack held constant", "native"),
                                  (axes[1], "C_minus_B", "C − B   stale stack, execution mode held constant", "matched")):
@@ -176,7 +180,7 @@ def fig_decomposition():
                     mec=INK, mew=1.0, zorder=3)
             ax.annotate(f"{mu:+.1f}%".replace("-", "\u2212"), (hi, yy), xytext=(5, 0),
                         textcoords="offset points", va="center", ha="left",
-                        fontsize=6.6, color=INK2,
+                        fontsize=7.2, color=INK2,
                         bbox=dict(fc="white", ec="none", pad=0.4))
         ax.axvline(0, color=INK2, lw=0.8)
         ax.set_title(title, loc="left", fontsize=7.8, pad=4)
@@ -186,7 +190,7 @@ def fig_decomposition():
     axes[0].set_yticklabels([lab for _, lab in ROWS][::-1])
     axes[0].set_xlim(-22, 32); axes[1].set_xlim(-30, 108)
     axes[0].text(0.02, 0.02, "● CI excludes 0\n○ CI includes 0",
-                 transform=axes[0].transAxes, ha="left", va="bottom", fontsize=6.6, color=INK2)
+                 transform=axes[0].transAxes, ha="left", va="bottom", fontsize=7.2, color=INK2)
     save(fig, "fig3_decomposition")
 
 

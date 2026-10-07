@@ -1,20 +1,37 @@
 # Changelog
 
-## v2.0-tsusc (layout) — three-condition study at the repository root
+## v2.1 — journal-neutral release; analysis unchanged
+
+- The repository now holds data, run kit, analysis and generated outputs only.
+  Manuscript sources are no longer included (`manuscript/` and
+  `first_campaign/manuscript/` removed); earlier releases are unchanged.
+- `analysis/build.sh` regenerates `out/` and `figures/` from the raw logs. The
+  LaTeX macros and tables in `out/` use only standard LaTeX, so they can be
+  used with any journal template.
+- `analysis/analyse_v2.py`: adds the classifier output per run (classes seen,
+  share of the most frequent class, mean confidence) as a sanity check. No
+  existing quantity changes; all 1,509 earlier macros are byte-identical.
+- `analysis/make_tex.py`: macros for the classifier check and for the number of
+  complete sleep phases (135; the run ends during the 136th); the results table
+  is split into two panels (condition means; effects) with shorter row labels.
+- `analysis/figures_v2.py`: Fig. 1 names the legacy base image in full
+  (`python:3.9-slim-bullseye`) and wraps its footnote; the figure font is fixed
+  to DejaVu Sans; larger labels in the contrast figure.
+
+## v2.0 (layout) — three-condition study at the repository root
 
 - The three-condition study (runs, run kit, analysis, figures, manuscript) now sits at the
   repository root, since it is the work this repository accompanies.
 - The first campaign's materials (analysis, data, figures, manuscript, training experiments,
   edge application) moved to `first_campaign/`; the model file stays at the root. The original
-  layout is preserved at tag `v1.0-caee`.
+  layout is preserved in the first release.
 - References to a `three_condition/` directory in the entry below refer to what is now the
   repository root.
 
-## v2.0-tsusc — three-condition campaign
+## v2.0 — three-condition campaign
 
 Adds `three_condition/`: the follow-up measurement that the first campaign's attribution
-bound called for, and the sources of the manuscript submitted to IEEE Transactions on
-Sustainable Computing.
+bound called for, and the manuscript sources at the time.
 
 - **Design.** Native (A), version-matched container (B) and legacy container (C), three
   blocks of three three-hour runs, randomised within block. B's image is generated from the

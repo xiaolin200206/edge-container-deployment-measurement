@@ -179,6 +179,12 @@ def run_stats(label: str) -> dict:
         "latency_ms_min": float(lat.min()),
         "latency_ms_p01": float(lat.quantile(0.01)),
         "fast_mode_pct": float(100 * (lat < FAST_MS).mean()),
+        # classifier output, as a sanity check that both stacks return sensible
+        # predictions (the scenes differ between runs, so this is not an
+        # output-equivalence test)
+        "pred_classes": sorted(f.Predicted_Class.astype(str).unique().tolist()),
+        "pred_top_class_pct": float(100 * f.Predicted_Class.value_counts(normalize=True).iloc[0]),
+        "confidence_mean": float(f.Confidence.astype(float).mean()),
     }
 
 

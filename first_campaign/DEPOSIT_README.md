@@ -2,7 +2,7 @@
 
 Research data supporting the study *"Deployment measurements of a containerised edge vision node on
 a Raspberry Pi 5: thermal, power and latency characteristics, and the attribution of container
-overhead"*, submitted to *Computers and Electrical Engineering*.
+overhead"*.
 
 Analysis code, container definitions and the edge application that consume these files are at
 <https://github.com/xiaolin200206/edge-container-deployment-measurement>.

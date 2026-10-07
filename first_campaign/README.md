@@ -1,10 +1,10 @@
 # Unified AgTech Edge AI Engine
 
-> **Location note (v2.0-tsusc).** These first-campaign materials were moved from the repository
+> **Location note (v2.0).** These first-campaign materials were moved from the repository
 > root into `first_campaign/` when the three-condition study became the main content of this
 > repository. Commands below run from inside `first_campaign/`; the model file
-> `basil_mobilenet.onnx` stays at the repository root. The original layout is preserved at tag
-> `v1.0-caee`.
+> `basil_mobilenet.onnx` stays at the repository root. The original layout is preserved in the
+> repository's first release.
 
 
 **Real-time agricultural disease monitoring on resource-constrained edge devices.**
@@ -27,12 +27,12 @@ Telegram alerting layer.
 > comparison. No logged value has been altered; what changed is what is claimed from the logs.
 > **See [`CHANGELOG.md`](CHANGELOG.md) for each correction and the evidence that prompted it.**
 
-> **Three-condition follow-up (v2.0-tsusc).** The attribution question left open by the first
+> **Three-condition follow-up (v2.0).** The attribution question left open by the first
 > campaign is answered by the three-condition study at the [repository root](../): nine runs comparing native
 > execution, a version-matched container and the legacy container, with power logged through the
 > idle phase. Containerisation itself added 1.3 ms (6.7 %) to mean inference latency; the legacy
 > software stack accounted for 87 % of the latency difference and used less energy per inference.
-> Data, run kit, analysis and manuscript sources are at the repository root; see its README.
+> Data, run kit and analysis are at the repository root; see its README.
 
 ---
 
@@ -63,7 +63,6 @@ overhead."*
 │   ├── figstyle.py                   #   shared figure style
 │   └── numbers.json                  #   the authoritative value of every quantity
 ├── figures/                          # regenerated manuscript figures  (NEW)
-├── manuscript/                       # revised manuscript + supplement  (NEW)
 ├── basil_experiments/                # training, ablation and offline analysis scripts
 ├── scripts/
 │   └── analyse_profiling.py          # earlier profiling analysis (superseded)
