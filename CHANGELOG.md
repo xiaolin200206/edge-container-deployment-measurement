@@ -1,5 +1,25 @@
 # Changelog
 
+## v2.2 — derived quantities from the existing runs; earlier values unchanged
+
+No new measurements. `analysis/extras_v2.py` reads the same nine runs and adds:
+
+- background processor load (1 Hz utilisation in the settled sleep phase) and the
+  workload CPU time per inference above it;
+- bounds on CPU time inside the timed inference call (four cores for the whole
+  call) and outside it (workload time minus that bound);
+- share of active time spent in the timed call, the call-only inference rate and
+  frame-interval statistics (camera-bound check);
+- energy per duty cycle split into active and sleep phase, per cycle and per
+  inference;
+- drift of cyclic peak temperature and fan speed over each run, and SoC
+  temperature late in the sleep phase as a proxy for the thermal environment;
+- two-block (blocks 2 and 3, camera pinned in every run) estimates of the main
+  quantities.
+
+`analysis/make_tex_extras.py` writes the corresponding macros and tables.
+`out/numbers_v2.json` regenerates byte-identically.
+
 ## v2.1 — journal-neutral release; analysis unchanged
 
 - The repository now holds data, run kit, analysis and generated outputs only.

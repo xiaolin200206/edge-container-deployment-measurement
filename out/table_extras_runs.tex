@@ -1,0 +1,27 @@
+\begin{table}[!ht]
+\centering
+\caption{Per-run values of the derived quantities. Background CPU: 1\,Hz utilisation in the settled sleep phase. Peak drift: least-squares slope of the cyclic peak temperature over the analysed period, and the mean of the last 20 analysed cycles minus that of the first 20. Late sleep: mean SoC temperature and fan speed in the last 3\,s of each sleep phase. p01: first percentile of inference latency.}
+\label{tab:a-runs}
+\setlength{\tabcolsep}{3pt}
+\footnotesize
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llcccccccc}
+\toprule
+ & & Backgr. & Outside call & Frame int. & \multicolumn{2}{c}{Peak drift} & \multicolumn{2}{c}{Late sleep} & \\
+\cmidrule(lr){6-7}\cmidrule(lr){8-9}
+Block & Run & CPU (\%) & $\geq$ (ms) & p99 (ms) & ($^\circ$C/h) & (last$-$first, $^\circ$C) & ($^\circ$C) & (rpm) & p01 (ms)\\
+\midrule
+1 & \texttt{legacy{\_}1} & 0.04 & 14.6 & 83 & +0.61 & +1.1 & 50.4 & 3{,}229 & 24.6\\
+1 & \texttt{matched{\_}1} & 0.04 & 69.8 & 78 & \textminus 0.02 & \textminus 0.1 & 52.9 & 3{,}421 & 14.8\\
+1 & \texttt{native{\_}1} & 0.15 & 72.4 & 78 & +0.21 & +0.8 & 54.8 & 5{,}035 & 15.0\\
+\addlinespace
+2 & \texttt{legacy{\_}2} & 0.04 & 10.8 & 83 & \textminus 0.74 & \textminus 2.6 & 53.8 & 3{,}768 & 24.5\\
+2 & \texttt{native{\_}2} & 0.15 & 72.7 & 78 & \textminus 0.10 & \textminus 0.2 & 52.1 & 3{,}386 & 14.7\\
+2 & \texttt{matched{\_}2} & 0.16 & 70.5 & 78 & +0.57 & +1.9 & 52.5 & 3{,}484 & 14.7\\
+\addlinespace
+3 & \texttt{matched{\_}3} & 0.16 & 70.8 & 78 & \textminus 2.04 & \textminus 5.5 & 52.3 & 3{,}726 & 14.7\\
+3 & \texttt{legacy{\_}3} & 0.04 & 13.3 & 83 & +0.58 & +1.1 & 50.9 & 3{,}299 & 24.6\\
+3 & \texttt{native{\_}3} & 0.15 & 72.8 & 77 & +0.13 & +0.3 & 52.9 & 3{,}409 & 15.0\\
+\bottomrule
+\end{tabular}}
+\end{table}

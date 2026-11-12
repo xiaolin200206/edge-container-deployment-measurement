@@ -80,7 +80,7 @@ COLS = [("latency_ms_mean", "Lat. mean", 2), ("latency_ms_median", "median", 2),
         ("temp_c_max", "$T$ max", 1), ("fan_rpm_mean_active", "Fan rpm", 0),
         ("cpu_mhz_active_mean", "MHz", 0)]
 A(r"\begin{sidewaystable*}[p]\centering\scriptsize\setlength{\tabcolsep}{1.9pt}")
-A(r"\caption{Per-run results after warm-up. Latency in ms; CPU ms: CPU time per inference; $P_\mathrm{floor}$: settled sleep-phase floor; energies per inference in mJ, Eqs.~(1)--(3) of the paper; temperatures in $^\circ$C (active-phase mean, mean cyclic peak, maximum); fan and frequency are active-phase means.}")
+A(r"\caption{Per-run results after warm-up. Latency in ms; CPU ms: CPU time per inference; $P_\mathrm{floor}$: settled sleep-phase floor; energies per inference in mJ, Eqs.~(1), (3) and (4) of the paper; temperatures in $^\circ$C (active-phase mean, mean cyclic peak, maximum); fan and frequency are active-phase means.}")
 A(r"\label{tab:s-perrun}")
 A(r"\begin{tabular}{l" + "r" * len(COLS) + r"}\toprule")
 A("Run & " + " & ".join(c[1] for c in COLS) + r"\\\midrule")

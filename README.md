@@ -54,7 +54,10 @@ inference over the duty cycle.
 │   ├── analyse_v2.py        # every quantity -> out/numbers_v2.json
 │   ├── make_tex.py          # LaTeX macros + Table 2 -> out/
 │   ├── make_supp.py         # supplemental tables -> out/
-│   └── figures_v2.py        # Figs. 1-7 -> figures/
+│   ├── figures_v2.py        # Figs. 1-7 -> figures/
+│   ├── extras_v2.py         # derived quantities (CPU-time bounds, phase energy,
+│   │                        #   thermal drift) -> out/extras_v2.json
+│   └── make_tex_extras.py   # their LaTeX macros and tables -> out/
 ├── out/                     # generated numbers (JSON + LaTeX macros) and tables
 ├── figures/                 # generated figures (PDF + PNG)
 ├── basil_mobilenet.onnx     # the model used in every run (SHA-256 in provenance.json)
@@ -69,13 +72,15 @@ Requirements: Python 3 with `pandas`, `numpy` and `matplotlib`.
 sh analysis/build.sh
 ```
 
-This runs the four analysis scripts in order:
+This runs the six analysis scripts in order:
 
 ```bash
 python3 analysis/analyse_v2.py   # every quantity -> out/numbers_v2.json
 python3 analysis/make_tex.py     # LaTeX macros and tables -> out/
 python3 analysis/make_supp.py    # supplementary tables -> out/supp_tables.tex
 python3 analysis/figures_v2.py   # Figs. 1-7 -> figures/
+python3 analysis/extras_v2.py    # derived quantities -> out/extras_v2.json
+python3 analysis/make_tex_extras.py  # their macros and tables -> out/
 ```
 
 `out/numbers_v2.tex` defines one LaTeX macro per reported value, and
